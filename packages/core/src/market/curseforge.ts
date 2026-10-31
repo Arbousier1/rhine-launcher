@@ -391,29 +391,43 @@ export class CurseForgeClient {
 
     let last: CurseForgeError | undefined
     for (const target of targets) {
-      let response: Response
-      try {
-        response = await this.fetchImpl(target.url, { headers: target.headers })
-      } catch (error) {
-        last = new CurseForgeError('无法连接 CurseForge：' + (error as Error).message)
-        continue
-      }
-      if (!response.ok) {
-        const detail = await response.text().catch(() => '')
-        last = new CurseForgeError(
-          `CurseForge 请求失败（HTTP ${response.status}）` + (detail ? '：' + detail.slice(0, 200) : ''),
-          response.status,
-        )
-        // 401/403 means this target refuses us; a mirror may still serve it.
-        if (response.status === 401 || response.status === 403) continue
-        throw last
-      }
-      try {
-        return await response.json() as T
-      } catch (error) {
-        throw new CurseForgeError('CurseForge 返回了无法解析的响应：' + (error as Error).message)
+      // The mirror is a third-party service; a single transient failure should
+      // not surface as "no results", so each target gets one retry.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        let response: Response
+        try {
+          response = await this.fetchImpl(target.url, { headers: target.headers })
+        } catch (error) {
+          last = new CurseForgeError('无法连接 CurseForge：' + (error as Error).message)
+          if (attempt === 0) { await delay(180); continue }
+          break
+        }
+        if (!response.ok) {
+          const detail = await response.text().catch(() => '')
+          last = new CurseForgeError(
+            `CurseForge 请求失败（HTTP ${response.status}）` + (detail ? '：' + detail.slice(0, 200) : ''),
+            response.status,
+          )
+          // 401/403 means this target refuses us; a mirror may still serve it.
+          if (response.status === 401 || response.status === 403) break
+          // Retry server-side hiccups (5xx / 429), never client errors.
+          if ((response.status >= 500 || response.status === 429) && attempt === 0) { await delay(300); continue }
+          throw last
+        }
+        try {
+          return await response.json() as T
+        } catch (error) {
+          last = new CurseForgeError('CurseForge 返回了无法解析的响应：' + (error as Error).message)
+          if (attempt === 0) { await delay(180); continue }
+          break
+        }
       }
     }
     throw last ?? new CurseForgeError('CurseForge 请求失败')
   }
+}
+
+/** Small cancellable-free backoff used between retries. */
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

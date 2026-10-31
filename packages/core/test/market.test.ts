@@ -406,6 +406,65 @@ describe('market clients over HTTP', () => {
     expect(client.usesMirror).toBe(false)
     await expect(client.search({ query: 'jei' })).rejects.toThrow(/API Key/)
   })
+
+  it('sends classId so CurseForge restricts results to the requested type', async () => {
+    const urls: string[] = []
+    const client = new CurseForgeClient({
+      baseUrl: 'https://api.curseforge.com',
+      apiKey: 'k',
+      mirror: null,
+      fetch: (async (input: any) => {
+        urls.push(String(input))
+        return new Response(JSON.stringify({ data: [], pagination: { totalCount: 0, index: 0, pageSize: 20 } }), { status: 200 })
+      }) as typeof fetch,
+    })
+    await client.search({ query: 'jei', projectType: 'mod', gameVersion: '1.20.1', loader: 'forge' })
+    const sent = decodeURIComponent(urls[0])
+    // Without classId CurseForge mixes modpacks and resource packs into the page.
+    expect(sent).toContain('classId=' + CURSEFORGE_CLASS_IDS.mod)
+    expect(sent).toContain('gameVersion=1.20.1')
+  })
+
+  it('reports a clear failure when both the key and the mirror fail', async () => {
+    const client = new CurseForgeClient({
+      baseUrl: 'https://api.curseforge.com',
+      apiKey: 'revoked',
+      mirror: 'unreachable.invalid',
+    })
+    // Silent empty results would look like "no matches" to the user; it must throw.
+    await expect(client.search({ query: 'jei' })).rejects.toBeInstanceOf(CurseForgeError)
+  })
+
+  it('retries a transient mirror failure instead of showing no results', async () => {
+    let attempts = 0
+    const client = new CurseForgeClient({
+      baseUrl: 'https://api.curseforge.com',
+      mirror: 'mirror.test',
+      fetch: (async () => {
+        attempts += 1
+        if (attempts === 1) return new Response('busy', { status: 503 })
+        return new Response(JSON.stringify({ data: [], pagination: { totalCount: 0, index: 0, pageSize: 20 } }), { status: 200 })
+      }) as typeof fetch,
+    })
+    const result = await client.search({ query: 'jei' })
+    expect(result.total).toBe(0)
+    expect(attempts).toBe(2)
+  })
+
+  it('does not retry an authentication failure', async () => {
+    let attempts = 0
+    const client = new CurseForgeClient({
+      baseUrl: 'https://api.curseforge.com',
+      apiKey: 'stale',
+      mirror: null,
+      fetch: (async () => {
+        attempts += 1
+        return new Response('denied', { status: 403 })
+      }) as typeof fetch,
+    })
+    await expect(client.search({ query: 'jei' })).rejects.toBeInstanceOf(CurseForgeError)
+    expect(attempts).toBe(1)
+  })
 })
 
 /* ------------------------------------------------------------------ */
