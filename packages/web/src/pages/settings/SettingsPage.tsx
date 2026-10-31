@@ -342,8 +342,8 @@ export default function SettingsPage() {
       {/* ---------------- integrations ---------------- */}
       <Panel caption="INTEGRATIONS" title="第三方服务">
         <Row
-          title="CurseForge API Key"
-          hint="CurseForge 官方要求自带 Key 才能搜索与下载；留空则市场里只显示 Modrinth。"
+          title="CurseForge API Key（可选）"
+          hint="有自有 Key 时优先直连官方 API；留空则自动走镜像源，仍可搜索与下载。"
         >
           <div className={styles.secretWrap}>
             <Input
@@ -368,7 +368,8 @@ export default function SettingsPage() {
             <span className={page.monoText}>{maskSecret(draft.curseforgeApiKey)}</span>
           ) : null}
           <span className={styles.keyHint}>
-            Key 只保存在本机 launcher.json 中，不会上传到任何服务器。
+            Key 只保存在本机 launcher.json 中，不会上传到任何服务器；也可用环境变量
+            RHINE_CURSEFORGE_API_KEY 注入，环境变量优先。
           </span>
         </Row>
       </Panel>

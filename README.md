@@ -66,14 +66,28 @@ pnpm --filter @rhine/web dev        # 前端 :5183（已代理 /api 与 /ws）
 | 整合包导入（mrpack / CurseForge zip） | ✅ | 严格 ZIP 预检、哈希校验、路径穿越拒绝、暂存后原子提交 |
 | 模组更新检查（Modrinth / CurseForge） | ✅ | 每种来源独立插件；区分 `update` / `current` / `unknown` / `error`，不伪报「全部最新」 |
 | 模组更新应用 | ✅ | 服务端签发的一次性提案；校验哈希与旧文件未变、保留 `.disabled`、失败回滚 |
-| 模组市场 | ✅ | 每种来源的 search / project / versions / install 各自独立 |
+| 模组市场 | ✅ | 每种来源的 search / project / versions / install 各自独立；**CurseForge 零密钥即可搜索与下载**（自有 Key 直连，无 Key 自动走镜像） |
 | 实例、文件、日志、崩溃分析、任务、插件管理 | ✅ | 均为单功能插件 |
+
+## 凭据配置
+
+凭据一律通过环境变量注入，优先级为 **请求参数 → 环境变量 → `launcher.json`**：
+
+```bash
+cp .env.example .env          # 然后填写
+RHINE_MICROSOFT_CLIENT_ID=    # 你自己的 Entra 应用 ID（设备码登录，公开客户端，无需 secret）
+RHINE_CURSEFORGE_API_KEY=     # 可选；不填则走镜像，仍可搜索与下载
+```
+
+- 微软 App ID 的注册流程与实测记录：[docs/MICROSOFT-OAUTH-APP-ID.md](docs/MICROSOFT-OAUTH-APP-ID.md)
+- CurseForge 的端点差异、PCL2/HMCL 对照与实测：[docs/CURSEFORGE.md](docs/CURSEFORGE.md)
+- 密钥永不进入 HTTP 响应、前端产物或日志（`packages/core/src/config/secrets.ts`）。
 
 ## 与 HMCL 的差异
 
-- 镜像必须显式配置，且只接受 HTTPS（本机回环地址除外）。
 - 不提供借用第三方 OAuth 应用身份的微软登录；这是有意的合规限制。
 - 更新只做检查与应用，不静默替换用户文件。
+- CurseForge 支持零密钥镜像回退，可用 `mirror: null` 关闭。
 
 ## 目录结构
 

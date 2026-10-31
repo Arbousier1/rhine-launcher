@@ -98,3 +98,39 @@ pnpm start          # 另开：pnpm dev:web
 借用第三方（Prism / MultiMC 等）注册的应用身份违反 Microsoft 服务条款，且对方可随时吊销，
 导致所有下游用户同时登不上。`README.md`「与 HMCL 的差异」与 `VERIFICATION.md`「明确边界」
 都记录了这条边界。因此正确做法是**每个使用者注册自己的 App ID**，这也是本文存在的原因。
+
+## 6. 与 PCL2 / HMCL 的实际做法对照
+
+两个上游项目都没有把凭据硬编码进源码，读取方式如下（已核对真实源码）：
+
+| 项目 | 取值方式 | 出处 |
+| --- | --- | --- |
+| PCL2 | `Environment.GetEnvironmentVariable("PCL_MS_CLIENT_ID")` | [ModSecret.vb](https://github.com/Meloong-Git/PCL/blob/main/Plain%20Craft%20Launcher%202/Modules/ModSecret.vb) 第 10 行 |
+| HMCL | `System.getProperty("hmcl.curseforge.apikey", JarUtils.getAttribute("hmcl.curseforge.apikey", ""))` | `CurseForgeRemoteAddonRepository.java` |
+
+本仓库采用同样的思路并统一成环境变量，优先级为
+**请求参数 → 环境变量 → `launcher.json`**：
+
+```
+RHINE_MICROSOFT_CLIENT_ID   应用（客户端）ID
+RHINE_MICROSOFT_AUTHORITY   consumers / organizations / 租户 GUID
+RHINE_CURSEFORGE_API_KEY    CurseForge API Key
+```
+
+PCL2 第 10 行的 `If(...)` 是典型 bug 温床：环境变量缺失时会得到空串而不是默认值。
+本仓库用 `packages/core/src/config/secrets.ts` 显式区分「未设置 / 空 / 有值」，
+空环境变量不会覆盖已保存的配置（有测试覆盖）。
+
+## 7. 本次实测记录（2026-10-31）
+
+真实网络、真实服务端，无 mock：
+
+| 检查项 | 结果 |
+| --- | --- |
+| 环境变量注入（文件里清空 clientId） | `/api/settings` 返回 `microsoftClientIdFromEnv: true`、`microsoftClientIdConfigured: true` |
+| 正版登录启动 | `POST /api/accounts/microsoft/start` → 200，`userCode` 签发，`clientId` 来自环境变量 |
+| 令牌轮询 | `POST /api/accounts/microsoft/complete` → `authorization_pending`（证明真实 token 端点已联通） |
+| CurseForge 零密钥搜索 | `GET /api/market/search?source=curseforge` → 200，251 条结果 |
+| CurseForge 零密钥下载 | 安装任务 `succeeded`，落盘 4,759,629 字节，SHA1 `7e095c4c…` 与官方一致，JAR 魔数正确 |
+| 模组识别 | `/api/instances/:id/mods` 解析出 `Just Enough Items · 15.74.0.232` |
+

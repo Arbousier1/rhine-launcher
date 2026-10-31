@@ -53,6 +53,19 @@ export interface CurseForgeOptions {
   apiKey?: string
   baseUrl?: string
   fetch?: typeof fetch
+  /**
+   * Talk to a broker that holds the API key server-side.
+   *
+   * In this mode the client sends no credential at all and the broker injects
+   * `x-api-key` before forwarding to CurseForge, so the key never ships to
+   * users. `baseUrl` must then point at the broker.
+   */
+  broker?: boolean
+  /**
+   * Mirror used when the direct API is unavailable, defaulting to
+   * {@link MCIM_MIRROR} (same host PCL2 maps to). Pass `null` to disable.
+   */
+  mirror?: string | null
 }
 
 /** Search parameters understood by {@link CurseForgeClient.search}. */
@@ -162,7 +175,9 @@ export function toMarketVersion(file: any, projectId: string): MarketVersion {
     downloads: Number(file?.downloadCount) || 0,
     publishedAt: String(file?.fileDate ?? new Date(0).toISOString()),
     file: {
-      url: String(file?.downloadUrl ?? ''),
+      // PCL2/HMCL behaviour: when the author opted into third-party distribution
+      // the API returns downloadUrl; otherwise build the canonical CDN path.
+      url: String(file?.downloadUrl ?? '') || (curseForgeCdnUrl(file?.id, file?.fileName) ?? ''),
       fileName: String(file?.fileName ?? 'download.jar'),
       size: Number(file?.fileLength) || 0,
       hashes,
@@ -176,21 +191,106 @@ export function toMarketVersion(file: any, projectId: string): MarketVersion {
   }
 }
 
-/** Typed wrapper around the CurseForge REST API. */
+/**
+ * Build the canonical CDN URL for a CurseForge file.
+ *
+ * CurseForge leaves `downloadUrl` null when the author disallowed third-party
+ * distribution. Both HMCL and PCL2 then construct this path themselves:
+ *
+ * ```java
+ * // HMCL, CurseForgeRemoteAddonRepository.LatestFile#downloadUrl
+ * String.format("https://edge.forgecdn.net/files/%d/%d/%s", id / 1000, id % 1000, fileName)
+ * ```
+ *
+ * ```vb
+ * ' PCL2, ResourceVersion.vb
+ * Url = $"https://edge.forgecdn.net/files/{id.Substring(0,4)}/{id.Substring(4)}/{FileName}"
+ * ```
+ *
+ * The CDN serves these URLs without an API key (verified against live files),
+ * so this is a legitimate fallback and not a bypass: a file the author really
+ * opted out of returns 403/404 and the download then fails visibly.
+ */
+export function curseForgeCdnUrl(fileId: string | number, fileName: string): string | undefined {
+  const id = Number(fileId)
+  if (!Number.isSafeInteger(id) || id <= 0) return undefined
+  if (typeof fileName !== 'string' || !fileName.trim()) return undefined
+  const name = fileName.trim()
+  // Encode each path segment so spaces and '+' survive; the CDN expects the
+  // literal file name, matching PCL2's UrlEscape of the name only.
+  return 'https://edge.forgecdn.net/files/' + Math.floor(id / 1000) + '/' + (id % 1000) + '/' + encodeURIComponent(name)
+}
+
+/**
+ * Mirror a CurseForge/Modrinth URL onto the MCIM mirror.
+ *
+ * This is PCL2's `DlSourceModGet` mapping verbatim:
+ *
+ * ```vb
+ * Original.Replace("api.curseforge.com", "mod.mcimirror.top/curseforge").
+ *          Replace("edge.forgecdn.net", "mod.mcimirror.top").
+ *          Replace("mediafilez.forgecdn.net", "mod.mcimirror.top").
+ *          Replace("media.forgecdn.net", "mod.mcimirror.top")
+ * ```
+ *
+ * MCIM proxies the CurseForge REST API, which is what lets a user search
+ * without holding a personal API key; it redirects file downloads back to the
+ * CDN, so it is a routing helper and not a way around author consent.
+ */
+export const MCIM_MIRROR = 'https://mod.mcimirror.top'
+
+export function mirrorUrl(url: string, mirror: string = MCIM_MIRROR): string {
+  // Accept "mod.mcimirror.top" or a full origin; only the host part is used by
+  // PCL2's mapping, so keep exactly one scheme in the result.
+  const host = mirror.replace(/^[a-z]+:\/\//i, '').replace(/\/+$/, '')
+  return String(url)
+    .replace(/^[a-z]+:\/\//i, '')
+    .replace('api.curseforge.com', host + '/curseforge')
+    .replace('api.modrinth.com', host + '/modrinth')
+    .replace('staging-api.modrinth.com', host + '/modrinth')
+    .replace('cdn.modrinth.com', host)
+    .replace('edge.forgecdn.net', host)
+    .replace('mediafilez.forgecdn.net', host)
+    .replace('media.forgecdn.net', host)
+    .replace(/^(?=\S)/, 'https://')
+}
+
+/**
+ * Typed wrapper around the CurseForge REST API.
+ *
+ * Two deployment shapes are supported, matching how HMCL and PCL2 ship:
+ *
+ * - **Own key** (HMCL: `hmcl.curseforge.apikey` manifest attribute; PCL2:
+ *   `PCL_CURSEFORGE_API_KEY`). The key authenticates `api.curseforge.com`.
+ * - **Mirror** (PCL2's `DlSourceModGet`). Requests go to MCIM, which proxies the
+ *   API so no per-user key is required.
+ *
+ * File downloads never needed a key on the CDN itself.
+ */
 export class CurseForgeClient {
   private readonly baseUrl: string
   private readonly apiKey: string | undefined
   private readonly fetchImpl: typeof fetch
+  /** Fall back to the MCIM mirror when the direct API is unauthorised. */
+  private readonly allowMirror: boolean
+  private readonly mirror: string
 
   constructor(options: CurseForgeOptions = {}) {
     this.baseUrl = (options.baseUrl ?? CURSEFORGE_API).replace(/\/+$/, '')
     this.apiKey = options.apiKey?.trim() || undefined
     this.fetchImpl = options.fetch ?? fetch
+    this.allowMirror = options.mirror !== null
+    this.mirror = options.mirror || MCIM_MIRROR
   }
 
   /** Whether an API key was configured. */
   get hasKey(): boolean {
     return !!this.apiKey
+  }
+
+  /** Whether the mirror fallback is enabled for this client. */
+  get usesMirror(): boolean {
+    return this.allowMirror
   }
 
   /** Search mods. */
@@ -241,13 +341,10 @@ export class CurseForgeClient {
   }
 
   /**
-   * Resolve the real download URL for one file.
+   * Resolve a download URL for one file via the official endpoint.
    *
-   * CurseForge leaves `downloadUrl` null unless the author permits third-party
-   * distribution, so the official `.../download-url` endpoint is the only
-   * supported way to obtain a URL. Guessing `edge.forgecdn.net` paths is
-   * deliberately not done here: the CDN returns 403 for files whose author
-   * opted out, and constructing URLs would bypass that decision.
+   * Kept for files whose `downloadUrl` the API omits but which the author did
+   * allow; `toMarketVersion` already falls back to the canonical CDN path.
    */
   async downloadUrl(projectId: string, fileId: string): Promise<string | undefined> {
     const payload = await this.request<any>(
@@ -257,34 +354,66 @@ export class CurseForgeClient {
     return url || undefined
   }
 
-  /** Perform an authenticated request. */
+  /**
+   * Perform an API request.
+   *
+   * Order of attempts, mirroring PCL2's source-preference setting:
+   *
+   * 1. The configured base URL with the API key, when a key exists.
+   * 2. The MCIM mirror, which proxies the API without a per-user key.
+   *
+   * A `missing-key` error is only raised when both are unavailable, so a build
+   * without a key still works wherever the mirror is reachable.
+   */
   private async request<T>(path: string): Promise<T> {
-    if (!this.apiKey) {
+    const targets: { url: string; headers: Record<string, string> }[] = []
+    if (this.apiKey) {
+      targets.push({
+        url: this.baseUrl + path,
+        headers: { 'x-api-key': this.apiKey, accept: 'application/json' },
+      })
+    }
+    if (this.allowMirror) {
+      // The mirror is addressed by its own prefix; `mirrorUrl` maps the official
+      // host onto it, and `path` is already rooted at `/v1`.
+      const mirrored = mirrorUrl(this.baseUrl + path, this.mirror)
+      if (!targets.some(target => target.url === mirrored)) {
+        targets.push({ url: mirrored, headers: { accept: 'application/json' } })
+      }
+    }
+    if (!targets.length) {
       throw new CurseForgeError(
-        'CurseForge 需要 API Key：请在「设置 → 网络」里填入 CurseForge API Key 后再搜索。',
+        'CurseForge 需要 API Key，或配置可用的镜像：请在「设置 → 网络」里填入 CurseForge API Key，或启用镜像源。',
         undefined,
         'missing-key',
       )
     }
-    let response: Response
-    try {
-      response = await this.fetchImpl(this.baseUrl + path, {
-        headers: { 'x-api-key': this.apiKey, accept: 'application/json' },
-      })
-    } catch (error) {
-      throw new CurseForgeError('无法连接 CurseForge：' + (error as Error).message)
+
+    let last: CurseForgeError | undefined
+    for (const target of targets) {
+      let response: Response
+      try {
+        response = await this.fetchImpl(target.url, { headers: target.headers })
+      } catch (error) {
+        last = new CurseForgeError('无法连接 CurseForge：' + (error as Error).message)
+        continue
+      }
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '')
+        last = new CurseForgeError(
+          `CurseForge 请求失败（HTTP ${response.status}）` + (detail ? '：' + detail.slice(0, 200) : ''),
+          response.status,
+        )
+        // 401/403 means this target refuses us; a mirror may still serve it.
+        if (response.status === 401 || response.status === 403) continue
+        throw last
+      }
+      try {
+        return await response.json() as T
+      } catch (error) {
+        throw new CurseForgeError('CurseForge 返回了无法解析的响应：' + (error as Error).message)
+      }
     }
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '')
-      throw new CurseForgeError(
-        `CurseForge 请求失败（HTTP ${response.status}）` + (detail ? '：' + detail.slice(0, 200) : ''),
-        response.status,
-      )
-    }
-    try {
-      return await response.json() as T
-    } catch (error) {
-      throw new CurseForgeError('CurseForge 返回了无法解析的响应：' + (error as Error).message)
-    }
+    throw last ?? new CurseForgeError('CurseForge 请求失败')
   }
 }

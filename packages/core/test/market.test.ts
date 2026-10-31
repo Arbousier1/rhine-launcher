@@ -13,8 +13,8 @@ import { marketPlugin } from './support/implementation-fixtures.ts'
 import { modsPlugin } from './support/implementation-fixtures.ts'
 import {
   CURSEFORGE_CLASS_IDS, CurseForgeClient, CurseForgeError, MINECRAFT_GAME_ID,
-  curseForgeSortField, loaderNameOf, projectTypeFromClassId, toMarketProject as cfProject,
-  toMarketVersion as cfVersion,
+  curseForgeSortField, curseForgeCdnUrl, loaderNameOf, mirrorUrl, projectTypeFromClassId,
+  toMarketProject as cfProject, toMarketVersion as cfVersion,
 } from '../src/market/curseforge.ts'
 import {
   MODRINTH_PROJECT_TYPES, ModrinthClient, ModrinthError, buildFacets, modrinthIndex,
@@ -209,10 +209,19 @@ describe('market/curseforge helpers', () => {
     expect(version.dependencies[0].type).toBe('optional')
   })
 
-  it('refuses to search without an api key', async () => {
+  it('refuses to search without a key when the mirror is disabled', async () => {
+    // Without a key the client falls back to the MCIM mirror, so "no key" is no
+    // longer an error on its own; it is only an error when the mirror is off.
+    const client = new CurseForgeClient({ mirror: null })
+    expect(client.hasKey).toBe(false)
+    expect(client.usesMirror).toBe(false)
+    await expect(client.search({ query: 'jei' })).rejects.toThrow(/API Key/)
+  })
+
+  it('reports an unconfigured client as mirror-capable by default', () => {
     const client = new CurseForgeClient()
     expect(client.hasKey).toBe(false)
-    await expect(client.search({ query: 'jei' })).rejects.toThrow(/API Key/)
+    expect(client.usesMirror).toBe(true)
   })
 })
 
@@ -313,6 +322,89 @@ describe('market clients over HTTP', () => {
     expect(project.id).toBe('1')
     const versions = await client.versions('1', { loader: 'forge' })
     expect(versions[0].file.fileName).toBe('f.jar')
+  })
+
+  /* CurseForge CDN + mirror rules, mirroring HMCL and PCL2 behaviour. */
+
+  it('builds the CDN path the way HMCL and PCL2 do', () => {
+    // HMCL: id / 1000 and id % 1000
+    expect(curseForgeCdnUrl(4593540, 'jei.jar')).toBe('https://edge.forgecdn.net/files/4593/540/jei.jar')
+    // PCL2: first 4 chars / the rest
+    expect(curseForgeCdnUrl('9382240', 'jei-26.3.jar')).toBe('https://edge.forgecdn.net/files/9382/240/jei-26.3.jar')
+    // Names with spaces and '+' must be URL-encoded, like PCL2's UrlEscape.
+    expect(curseForgeCdnUrl(1234, 'my mod+1.jar')).toBe('https://edge.forgecdn.net/files/1/234/my%20mod%2B1.jar')
+  })
+
+  it('refuses to build a CDN path for unusable input', () => {
+    expect(curseForgeCdnUrl(0, 'a.jar')).toBeUndefined()
+    expect(curseForgeCdnUrl('nope', 'a.jar')).toBeUndefined()
+    expect(curseForgeCdnUrl(-5, 'a.jar')).toBeUndefined()
+    expect(curseForgeCdnUrl(123, '')).toBeUndefined()
+    expect(curseForgeCdnUrl(12.5, 'a.jar')).toBeUndefined()
+  })
+
+  it('prefers the API downloadUrl and only falls back when it is missing', () => {
+    const withUrl = cfVersion({ id: 42, fileName: 'f.jar', downloadUrl: 'https://edge.forgecdn.net/files/0/42/f.jar' }, '7')
+    expect(withUrl.file.url).toBe('https://edge.forgecdn.net/files/0/42/f.jar')
+    const withoutUrl = cfVersion({ id: 42, fileName: 'f.jar', downloadUrl: null }, '7')
+    expect(withoutUrl.file.url).toBe('https://edge.forgecdn.net/files/0/42/f.jar')
+  })
+
+  it('maps official hosts onto the MCIM mirror exactly like PCL2', () => {
+    expect(mirrorUrl('https://api.curseforge.com/v1/mods/search'))
+      .toBe('https://mod.mcimirror.top/curseforge/v1/mods/search')
+    expect(mirrorUrl('https://edge.forgecdn.net/files/4593/540/a.jar'))
+      .toBe('https://mod.mcimirror.top/files/4593/540/a.jar')
+    expect(mirrorUrl('https://mediafilez.forgecdn.net/files/1/2/a.jar'))
+      .toBe('https://mod.mcimirror.top/files/1/2/a.jar')
+    expect(mirrorUrl('https://cdn.modrinth.com/data/x/y.jar'))
+      .toBe('https://mod.mcimirror.top/data/x/y.jar')
+    // A custom mirror origin is accepted with or without its scheme.
+    expect(mirrorUrl('https://api.curseforge.com/v1/x', 'https://example.test'))
+      .toBe('https://example.test/curseforge/v1/x')
+    expect(mirrorUrl('https://api.curseforge.com/v1/x', 'example.test'))
+      .toBe('https://example.test/curseforge/v1/x')
+  })
+
+  it('falls back to the mirror when the keyed request is rejected', async () => {
+    const calls: string[] = []
+    const client = new CurseForgeClient({
+      baseUrl: 'https://api.curseforge.com',
+      apiKey: 'stale',
+      mirror: 'mirror.test',
+      fetch: (async (input: any) => {
+        const url = String(input)
+        calls.push(url)
+        if (url.includes('api.curseforge.com')) return new Response('denied', { status: 403 })
+        return new Response(JSON.stringify({ data: [], pagination: { totalCount: 0, index: 0, pageSize: 20 } }), { status: 200 })
+      }) as typeof fetch,
+    })
+    const result = await client.search({ query: 'jei' })
+    expect(result.total).toBe(0)
+    expect(calls.some(url => url.includes('api.curseforge.com'))).toBe(true)
+    expect(calls.some(url => url.includes('mirror.test/curseforge'))).toBe(true)
+  })
+
+  it('works with no key at all by using the mirror only', async () => {
+    const calls: string[] = []
+    const client = new CurseForgeClient({
+      baseUrl: 'https://api.curseforge.com',
+      mirror: 'mirror.test',
+      fetch: (async (input: any) => {
+        calls.push(String(input))
+        return new Response(JSON.stringify({ data: [], pagination: { totalCount: 0, index: 0, pageSize: 20 } }), { status: 200 })
+      }) as typeof fetch,
+    })
+    expect(client.hasKey).toBe(false)
+    await client.search({ query: 'jei' })
+    expect(calls).toHaveLength(1)
+    expect(calls[0]).toContain('mirror.test/curseforge')
+  })
+
+  it('honours mirror:null to disable the fallback', async () => {
+    const client = new CurseForgeClient({ baseUrl: 'https://api.curseforge.com', apiKey: undefined, mirror: null })
+    expect(client.usesMirror).toBe(false)
+    await expect(client.search({ query: 'jei' })).rejects.toThrow(/API Key/)
   })
 })
 
@@ -446,9 +538,19 @@ describe('MarketService', () => {
     await expect(ctx.market.install(instance.id, version)).rejects.toThrow(/校验失败|下载失败/)
   })
 
-  it('returns a Chinese hint when curseforge has no key', async () => {
-    await expect(ctx.market.search({ source: 'curseforge', query: 'jei' })).rejects.toThrow(/API Key/)
-    await expect(ctx.market.search({ source: 'curseforge', query: 'jei' })).rejects.toBeInstanceOf(CurseForgeError)
+  it('explains a missing key only when the mirror is unavailable', async () => {
+    // The service builds its client with the mirror enabled, so a keyless
+    // install keeps working. Disabling the mirror must surface a clear error
+    // rather than a bare 403.
+    const service = ctx.market as any
+    service.reset()
+    const client = service.curseforge() as CurseForgeClient
+    const offline = new CurseForgeClient({ baseUrl: 'https://api.curseforge.com', mirror: null })
+    expect(offline.hasKey).toBe(false)
+    await expect(offline.search({ query: 'jei' })).rejects.toThrow(/API Key/)
+    await expect(offline.search({ query: 'jei' })).rejects.toBeInstanceOf(CurseForgeError)
+    // And the service's own client really is mirror-capable.
+    expect(client.usesMirror).toBe(true)
   })
 
   it('rejects installs for unknown instances', async () => {
