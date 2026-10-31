@@ -1,0 +1,159 @@
+/**
+ * Launch sequence overlay: a full-bleed paper panel that walks through the
+ * stages of a launch (prepare / verify / runtime / spawn / running).
+ */
+
+.rh-launch {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  background: var(--rhine-paper);
+  animation: rh-fade-in var(--rhine-dur-2) var(--rhine-ease);
+}
+
+.rh-launch__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: min(560px, calc(100vw - 64px));
+}
+
+.rh-launch__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line);
+}
+
+.rh-launch__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rh-launch__caption {
+  color: var(--rhine-accent);
+}
+
+.rh-launch__name {
+  font-size: var(--rhine-fs-28);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rh-launch__stages {
+  display: flex;
+  flex-direction: column;
+}
+
+.rh-launch__stage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+  color: var(--rhine-muted);
+  font-size: var(--rhine-fs-13);
+  transition: color var(--rhine-dur-2) var(--rhine-ease);
+}
+
+.rh-launch__stage:last-child {
+  border-bottom: 0;
+}
+
+.rh-launch__stage.is-active {
+  color: var(--rhine-ink);
+}
+
+.rh-launch__stage.is-done {
+  color: var(--rhine-muted-strong);
+}
+
+.rh-launch__stage.is-failed {
+  color: var(--rhine-danger);
+}
+
+.rh-launch__index {
+  font-family: var(--rhine-font-mono);
+  font-size: 10px;
+  letter-spacing: var(--rhine-track);
+  width: 22px;
+  flex: none;
+  color: var(--rhine-muted);
+}
+
+.rh-launch__stage.is-active .rh-launch__index {
+  color: var(--rhine-accent);
+}
+
+.rh-launch__stagename {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rh-launch__tick {
+  width: 20px;
+  display: flex;
+  justify-content: flex-end;
+  flex: none;
+  color: var(--rhine-ok);
+}
+
+.rh-launch__bar {
+  height: 2px;
+  background: var(--rhine-line-soft);
+  overflow: hidden;
+}
+
+.rh-launch__fill {
+  height: 100%;
+  background: var(--rhine-accent);
+  transition: width var(--rhine-dur-3) var(--rhine-ease);
+}
+
+.rh-launch__fill.is-indeterminate {
+  width: 34%;
+  animation: rh-scan 1.4s var(--rhine-ease) infinite;
+}
+
+.rh-launch__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.rh-launch__hint {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+  min-width: 0;
+}
+
+.rh-launch__error {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-danger);
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 10px 12px;
+  border: var(--rhine-hairline) solid var(--rhine-line);
+  border-radius: 2px;
+  background: var(--rhine-field);
+}
+
+@media (max-width: 640px) {
+  .rh-launch__name {
+    font-size: var(--rhine-fs-20);
+  }
+}

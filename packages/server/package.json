@@ -1,0 +1,27 @@
+{
+  "name": "@rhine/server",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@rhine/core": "workspace:*",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "@deepseek-ai/cosmokit": "1.8.6",
+    "hono": "^4.13.0",
+    "@hono/node-server": "^2.1.0",
+    "ws": "^8.18.0",
+    "@rhine/plugin-api": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.0",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

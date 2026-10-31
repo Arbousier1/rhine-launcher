@@ -1,0 +1,29 @@
+/**
+ * Disabled-feature notice (rendered by the host in place of a disabled view).
+ */
+
+.rh-feature-off {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.rh-feature-off__title {
+  font-size: var(--rhine-fs-20);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.rh-feature-off__hint {
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-muted);
+  line-height: 1.6;
+}
+
+.rh-feature-off__id {
+  font-family: var(--rhine-font-mono);
+  font-size: 11px;
+  letter-spacing: var(--rhine-track-tight);
+  color: var(--rhine-accent);
+}

@@ -1,0 +1,4 @@
+import {defineFeature} from '@rhine/plugin-api'
+import {mountNativePanel,setupNativePanel,type NativePanelInput,type NativePanelHandle} from '../../native-panels'
+import {renderAccounts} from './render'
+export default defineFeature<NativePanelInput,NativePanelHandle>({id:'panel.accounts',capability:'panel.accounts',title:'原生账号认证',optionalDepends:['launcher.bootstrap','launcher.account.offline','launcher.accounts.settings','launcher.accounts.settings.update','launcher.accounts.list','launcher.accounts.remove','launcher.accounts.refresh','launcher.accounts.microsoft.start','launcher.accounts.microsoft.complete','launcher.accounts.microsoft.cancel','launcher.accounts.external.login','launcher.accounts.external.validate'],setup:env=>setupNativePanel(env,'panel.accounts'),execute:(input,env)=>mountNativePanel(env,'panel.accounts',input,renderAccounts)})

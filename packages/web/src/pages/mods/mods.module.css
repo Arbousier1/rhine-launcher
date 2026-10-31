@@ -1,0 +1,150 @@
+/**
+ * Mods page layout: a three-part row (tile, text, actions) inside a hairline
+ * list, plus the install strip and the detail column.
+ */
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+}
+
+.selected {
+  box-shadow: inset 2px 0 0 var(--rhine-accent);
+}
+
+.installBar {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding: 12px 0 4px;
+}
+
+.installBar__field {
+  flex: 1 1 320px;
+  min-width: 220px;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail__head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.detail__title {
+  font-size: var(--rhine-fs-20);
+  line-height: var(--rhine-lh-tight);
+  color: var(--rhine-ink);
+  overflow-wrap: anywhere;
+}
+
+.detail__desc {
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-muted-strong);
+  line-height: 1.5;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 6px 10px;
+  font-size: var(--rhine-fs-13);
+}
+
+.kv dt {
+  color: var(--rhine-muted);
+  font-size: var(--rhine-fs-12);
+  letter-spacing: var(--rhine-track-tight);
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+
+.kv dd {
+  margin: 0;
+  color: var(--rhine-ink);
+  overflow-wrap: anywhere;
+}
+
+.tagRow {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.nameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--rhine-fs-15);
+  color: var(--rhine-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name--muted {
+  color: var(--rhine-muted);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+  min-width: 0;
+}
+
+.brokenList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.brokenItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted-strong);
+  padding: 4px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+}
+
+.brokenItem:last-child {
+  border-bottom: none;
+}
+
+.filterRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dialogStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

@@ -1,0 +1,237 @@
+/**
+ * Instance detail: a header block, a tab bar and hairline-separated panels.
+ * The tab bodies swap with a 180ms fade so switching never reflows the page.
+ * The page also hosts the ambient dust, the scanner band and the glass sheen
+ * that plays when the view unfolds out of the clicked card.
+ */
+
+.rh-detail {
+  position: relative;
+}
+
+/* Keep the reading layer above the ambient specks. */
+.rh-detail__head,
+.rh-detail__tabs,
+.rh-detail__body {
+  position: relative;
+  z-index: 1;
+}
+
+.rh-detail__scan {
+  z-index: 1;
+}
+
+.rh-detail__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 16px;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line);
+}
+
+.rh-detail__titleblock {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.rh-detail__glyph {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border: var(--rhine-hairline) solid var(--rhine-line);
+  border-radius: 2px;
+  background: var(--rhine-field);
+  color: var(--rhine-accent);
+  overflow: hidden;
+}
+
+.rh-detail__glyph img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rh-detail__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rh-detail__caption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rhine-accent);
+}
+
+.rh-detail__name {
+  font-size: var(--rhine-fs-28);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rh-detail__badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rh-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding-top: 4px;
+}
+
+.rh-detail__tabs {
+  margin: 18px 0 20px;
+}
+
+.rh-detail__body {
+  animation: rh-fade-in var(--rhine-dur-1) var(--rhine-ease);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rh-detail__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.rh-detail__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.rh-detail__notes {
+  min-height: 88px;
+}
+
+.rh-diag {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.rh-diag__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+  font-size: var(--rhine-fs-13);
+}
+
+.rh-diag__item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.rh-diag__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rh-diag__hint {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.rh-detail__path {
+  font-family: var(--rhine-font-mono);
+  font-size: 11px;
+  color: var(--rhine-muted-strong);
+  word-break: break-all;
+}
+
+.rh-detail__filelist {
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.rh-detail__filerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+  font-size: var(--rhine-fs-12);
+}
+
+.rh-detail__filerow:last-child {
+  border-bottom: 0;
+}
+
+.rh-detail__filename {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rh-detail__filemeta {
+  font-family: var(--rhine-font-mono);
+  font-size: 11px;
+  color: var(--rhine-muted);
+  flex: none;
+}
+
+.rh-detail__log {
+  margin: 0;
+  padding: 12px 14px;
+  max-height: 360px;
+  overflow: auto;
+  border: var(--rhine-hairline) solid var(--rhine-line);
+  border-radius: 2px;
+  background: var(--rhine-field);
+  font-family: var(--rhine-font-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--rhine-muted-strong);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.rh-detail__logline {
+  display: block;
+}
+
+.rh-detail__logline--warn {
+  color: var(--rhine-warn);
+}
+
+.rh-detail__logline--error {
+  color: var(--rhine-danger);
+}
+
+.rh-detail__missing {
+  padding: 48px 0;
+}
+
+@media (max-width: 1080px) {
+  .rh-detail__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

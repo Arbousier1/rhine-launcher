@@ -1,0 +1,3 @@
+import * as THREE from 'three'
+/** Same texture quality operation for either API; never lower the requested value. */
+export function applyArchiveTextureQuality(root:THREE.Object3D,maximum:number){const textures=new Set<THREE.Texture>();root.traverse(object=>{if(!(object instanceof THREE.Mesh))return;for(const material of Array.isArray(object.material)?object.material:[object.material])for(const value of Object.values(material))if(value instanceof THREE.Texture&&!value.isRenderTargetTexture)textures.add(value)});for(const texture of textures)if(texture.anisotropy!==maximum){texture.anisotropy=maximum;texture.needsUpdate=true}}

@@ -1,0 +1,128 @@
+/**
+ * Settings page: hairline form rows grouped into panels, with a sticky save
+ * strip that only appears when the draft differs from the persisted settings.
+ */
+
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.mirrorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.mirrorItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mirrorLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-ink);
+}
+
+.mirrorHint {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.saveBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: var(--rhine-hairline) solid var(--rhine-accent);
+  background: var(--rhine-field);
+  box-shadow: 0 -1px 0 var(--rhine-line-soft);
+}
+
+.saveBar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.saveBar__title {
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-ink);
+}
+
+.saveBar__hint {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.saveBar__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.numberRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.numberRow input {
+  max-width: 120px;
+}
+
+.languageRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dangerZone {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pathRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pathValue {
+  flex: 1 1 260px;
+  min-width: 0;
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.secretWrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.keyHint {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+  line-height: 1.5;
+}

@@ -1,0 +1,133 @@
+/**
+ * Rhine design tokens.
+ *
+ * Extracted from RhineLabUI's DESIGN.md and theme.css: warm paper, ink black,
+ * a single amber accent for selection, hairline rules and a tight type scale.
+ * Every value the UI needs is declared here; components never hard-code colours.
+ */
+
+@font-face {
+  font-family: 'MiSans';
+  src: local('MiSans'), local('MiSans-Regular'), local('MiSans VF'), local('MiSans VF Regular');
+  font-display: swap;
+}
+
+:root {
+  /* ---- surfaces & ink ---------------------------------------------- */
+  --rhine-paper: #f2f0eb;
+  --rhine-ink: #171713;
+  --rhine-panel: #e9e6df;
+  --rhine-field: #f7f5f1;
+  --rhine-line: #bdb8ad;
+  --rhine-line-soft: #d6d1c7;
+  --rhine-muted: #77756d;
+  --rhine-muted-strong: #55534c;
+
+  /* ---- accent (selection / emphasis) ------------------------------- */
+  --rhine-accent: #c98b3f;
+  --rhine-accent-bright: #d8a15a;
+  --rhine-accent-soft: rgba(201, 139, 63, 0.13);
+  --rhine-on-accent: #fdfbf7;
+
+  /* ---- status ------------------------------------------------------ */
+  --rhine-danger: #a2402c;
+  --rhine-danger-soft: rgba(162, 64, 44, 0.12);
+  --rhine-ok: #4b7a48;
+  --rhine-ok-soft: rgba(75, 122, 72, 0.13);
+  --rhine-warn: #a8761f;
+  --rhine-warn-soft: rgba(168, 118, 31, 0.14);
+  --rhine-overlay: rgba(23, 23, 19, 0.44);
+
+  /* ---- type -------------------------------------------------------- */
+  --rhine-font: 'MiSans', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system,
+    'Segoe UI', 'Noto Sans SC', sans-serif;
+  --rhine-font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Cascadia Mono', Consolas,
+    'Liberation Mono', monospace;
+  --rhine-fs-12: 12px;
+  --rhine-fs-13: 13px;
+  --rhine-fs-15: 15px;
+  --rhine-fs-20: 20px;
+  --rhine-fs-28: 28px;
+  --rhine-fs-44: 44px;
+  --rhine-lh: 1.55;
+  --rhine-lh-tight: 1.2;
+  --rhine-track: 0.18em;
+  --rhine-track-tight: 0.08em;
+
+  /* ---- layout ------------------------------------------------------ */
+  --rhine-nav-w: 260px;
+  --rhine-radius: 4px;
+  --rhine-gutter: 24px;
+  --rhine-topbar-h: 56px;
+  --rhine-row-h: 44px;
+  --rhine-hairline: 1px;
+
+  /* ---- motion ------------------------------------------------------ */
+  --rhine-dur-1: 180ms;
+  --rhine-dur-2: 220ms;
+  --rhine-dur-3: 300ms;
+  --rhine-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --rhine-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---- elevation (single, never stacked) --------------------------- */
+  --rhine-shadow-dialog: 0 18px 48px rgba(23, 23, 19, 0.16);
+  --rhine-ring: 0 0 0 1px var(--rhine-accent);
+
+  color-scheme: light;
+}
+
+/* A brighter paper, for daylight screens. */
+[data-theme='light'] {
+  --rhine-paper: #faf9f6;
+  --rhine-panel: #f0eee8;
+  --rhine-field: #ffffff;
+  --rhine-line: #cac5ba;
+  --rhine-line-soft: #e2ded4;
+  --rhine-muted: #7d7b72;
+}
+
+/* Night archive: ink becomes paper. */
+[data-theme='midnight'] {
+  --rhine-paper: #14140f;
+  --rhine-ink: #ece9e4;
+  --rhine-panel: #1c1c16;
+  --rhine-field: #191913;
+  --rhine-line: #3b3b31;
+  --rhine-line-soft: #2a2a22;
+  --rhine-muted: #8f8d83;
+  --rhine-muted-strong: #b6b3a9;
+  --rhine-accent: #d8a15a;
+  --rhine-accent-bright: #e8bc80;
+  --rhine-accent-soft: rgba(216, 161, 90, 0.16);
+  --rhine-on-accent: #1a1409;
+  --rhine-danger: #d0715a;
+  --rhine-danger-soft: rgba(208, 113, 90, 0.16);
+  --rhine-ok: #7fa87c;
+  --rhine-ok-soft: rgba(127, 168, 124, 0.16);
+  --rhine-warn: #d3a04a;
+  --rhine-warn-soft: rgba(211, 160, 74, 0.16);
+  --rhine-overlay: rgba(0, 0, 0, 0.62);
+  --rhine-shadow-dialog: 0 18px 48px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
+/* Motion degrades to instant for users who ask for it. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rhine-dur-1: 1ms;
+    --rhine-dur-2: 1ms;
+    --rhine-dur-3: 1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

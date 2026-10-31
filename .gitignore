@@ -1,0 +1,24 @@
+node_modules/
+dist/
+*.log
+.rhine/
+.recon/
+.tmp*
+coverage/
+packages/web/dist/
+.reference/
+.scratch*/
+.rhine-*/
+.scratch-*/
+*.part
+
+# Credentials: never commit real keys. `.env.example` documents the variables.
+.env
+.env.*
+!.env.example
+
+# Local launcher state (accounts, sessions, downloaded game files)
+.rhine-dev/
+launcher.json
+accounts.json
+launch-sessions.json

@@ -1,0 +1,225 @@
+/**
+ * Logs page: task list, session list and the live tail panel. The log body
+ * uses a mono stack with tabular timestamps so lines stay column-aligned.
+ */
+
+.taskRow {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.taskMain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.taskHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.taskTitle {
+  font-size: var(--rhine-fs-15);
+  color: var(--rhine-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taskMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.taskError {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-danger);
+  overflow-wrap: anywhere;
+}
+
+.sessionRow {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.sessionMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sessionHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sessionName {
+  font-size: var(--rhine-fs-15);
+  color: var(--rhine-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+/* ---------------------------------------------------------------- */
+/* log panel                                                         */
+/* ---------------------------------------------------------------- */
+
+.logPanel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.logToolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+}
+
+.logBody {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-12);
+  line-height: 1.6;
+  background: var(--rhine-field);
+  border: var(--rhine-hairline) solid var(--rhine-line);
+  height: 480px;
+  overflow: auto;
+  padding: 8px 10px;
+  scroll-behavior: smooth;
+  overflow-anchor: none;
+}
+
+.logBody.isPaused {
+  border-color: var(--rhine-warn);
+}
+
+.logLine {
+  display: grid;
+  grid-template-columns: 68px 46px minmax(0, 1fr);
+  gap: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.logTime {
+  color: var(--rhine-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.logLevel {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  line-height: 1.9;
+}
+
+.logLevelInfo { color: var(--rhine-muted); }
+.logLevelDebug { color: var(--rhine-line); }
+.logLevelWarn { color: var(--rhine-warn); }
+.logLevelError { color: var(--rhine-danger); }
+
+.logMessage {
+  color: var(--rhine-ink);
+}
+
+.logLine.isError .logMessage {
+  color: var(--rhine-danger);
+}
+
+.logLine.isWarn .logMessage {
+  color: var(--rhine-warn);
+}
+
+.logEmpty {
+  color: var(--rhine-muted);
+  font-family: var(--rhine-font);
+  font-size: var(--rhine-fs-13);
+  padding: 24px 0;
+  text-align: center;
+}
+
+.jumpButton {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.statsInline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.searchInput {
+  min-width: 160px;
+  max-width: 260px;
+}
+
+.diagnosticList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--rhine-fs-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.diagnostic {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+}
+
+.diagnostic:last-child {
+  border-bottom: none;
+}
+
+.diagnosticText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.diagnosticHint {
+  color: var(--rhine-muted);
+  font-size: var(--rhine-fs-12);
+}

@@ -1,0 +1,27 @@
+{
+  "name": "rhine-launcher",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Rhine Launcher - a Cordis & TypeScript Minecraft launcher with a Rhine Lab inspired interface",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "packageManager": "pnpm@12.6.0",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:server": "tsx watch packages/server/src/main.ts",
+    "dev:web": "pnpm --filter @rhine/web dev",
+    "build": "pnpm --filter @rhine/web build",
+    "start": "tsx packages/server/src/main.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "@types/node": "^24.0.0"
+  }
+}

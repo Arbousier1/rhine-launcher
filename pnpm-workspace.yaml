@@ -1,0 +1,8 @@
+packages:
+  - packages/*
+
+allowBuilds:
+  esbuild: true
+
+patchedDependencies:
+  '@kitlangton/rolling-number@0.4.1': patches/@kitlangton__rolling-number@0.4.1.patch

@@ -1,0 +1,267 @@
+/**
+ * Global baseline: reset, typography, focus, scrollbars and the handful of
+ * shared keyframes the archive uses. Imported once from main.tsx.
+ */
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--rhine-paper);
+  color: var(--rhine-ink);
+  font-family: var(--rhine-font);
+  font-size: var(--rhine-fs-15);
+  line-height: var(--rhine-lh);
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  line-height: var(--rhine-lh-tight);
+  letter-spacing: -0.01em;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-12);
+}
+
+hr {
+  border: 0;
+  border-top: var(--rhine-hairline) solid var(--rhine-line);
+  margin: 0;
+}
+
+::selection {
+  background: var(--rhine-accent-soft);
+  color: var(--rhine-ink);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: var(--rhine-hairline) solid var(--rhine-accent);
+  outline-offset: 2px;
+}
+
+/* Thin, quiet scrollbars that match the paper. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rhine-line) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--rhine-line);
+  border: 3px solid var(--rhine-paper);
+  border-radius: 0;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--rhine-muted);
+}
+
+/* ---- shared type utilities ---------------------------------------- */
+
+.rh-caption {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-12);
+  letter-spacing: var(--rhine-track);
+  text-transform: uppercase;
+  color: var(--rhine-muted);
+  white-space: nowrap;
+}
+
+.rh-mono {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-12);
+  letter-spacing: var(--rhine-track-tight);
+}
+
+.rh-num {
+  font-family: var(--rhine-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--rhine-track-tight);
+}
+
+.rh-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rh-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rh-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- keyframes ----------------------------------------------------- */
+
+@keyframes rh-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rh-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rh-roll-in {
+  from {
+    opacity: 0;
+    transform: translateY(-60%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rh-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.32;
+  }
+}
+
+@keyframes rh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rh-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes rh-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(2000%);
+  }
+}
+
+@keyframes rh-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  55%,
+  100% {
+    opacity: 0.15;
+  }
+}

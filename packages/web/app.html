@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f2f0eb" />
+    <meta name="description" content="Rhine Launcher — 档案驱动的 Minecraft 启动器" />
+    <title>Rhine Launcher</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      /* First-paint paper so the app never flashes white before CSS loads. */
+      html, body { margin: 0; background: #f2f0eb; color: #171713; }
+      #root { min-height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Rhine Launcher 需要启用 JavaScript。</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

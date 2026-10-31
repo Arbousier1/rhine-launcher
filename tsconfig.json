@@ -1,0 +1,36 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@rhine/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@rhine/core/*": [
+        "./packages/core/src/*"
+      ],
+      "@rhine/server": [
+        "./packages/server/src/index.ts"
+      ],
+      "@rhine/web/*": [
+        "./packages/web/src/*"
+      ],
+      "@/*": [
+        "./packages/web/src/*"
+      ],
+      "@rhine/plugin-api": [
+        "./packages/plugin-api/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx",
+    "packages/*/*.ts",
+    "vitest.config.ts"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/dist"
+  ]
+}

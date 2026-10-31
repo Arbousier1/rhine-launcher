@@ -1,0 +1,134 @@
+/**
+ * Plugin manager page: hairline rows, one switch per single-feature plugin.
+ */
+
+.rh-plugins {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rh-plugins__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.rh-plugins__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+}
+
+.rh-plugins__row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.rh-plugins__row[data-status='disabled'] .rh-plugins__title,
+.rh-plugins__row[data-status='failed'] .rh-plugins__title {
+  color: var(--rhine-muted);
+}
+
+.rh-plugins__main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rh-plugins__title {
+  font-size: var(--rhine-fs-15);
+  color: var(--rhine-ink);
+}
+
+.rh-plugins__id {
+  font-family: var(--rhine-font-mono);
+  font-size: 11px;
+  letter-spacing: var(--rhine-track-tight);
+  color: var(--rhine-accent);
+}
+
+.rh-plugins__desc {
+  font-size: var(--rhine-fs-12);
+  line-height: 1.55;
+  color: var(--rhine-muted);
+  max-width: 74ch;
+}
+
+.rh-plugins__deps {
+  font-family: var(--rhine-font-mono);
+  font-size: 10px;
+  letter-spacing: var(--rhine-track-tight);
+  color: var(--rhine-muted);
+}
+
+.rh-plugins__error {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-danger);
+}
+
+.rh-plugins__control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  padding-top: 2px;
+}
+
+.rh-plugins__notice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.rh-plugins__notice h2 {
+  font-size: var(--rhine-fs-20);
+}
+
+.rh-plugins__notice p {
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-muted);
+  line-height: 1.6;
+}
+
+.rh-plugins__backendrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+}
+
+.rh-plugins__backendrow:last-child {
+  border-bottom: 0;
+}
+
+.rh-plugins__backendmain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rh-plugins__backendactions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+@media (max-width: 760px) {
+  .rh-plugins__row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+/* The row already shows the title; the switch keeps only its aria-label. */
+.rh-plugins__control .rh-switch__label {
+  display: none;
+}

@@ -1,0 +1,4 @@
+import {defineFeature} from '@rhine/plugin-api'
+import {mountNativePanel,setupNativePanel,type NativePanelInput,type NativePanelHandle} from '../../native-panels'
+import {renderMods} from './render'
+export default defineFeature<NativePanelInput,NativePanelHandle>({id:'panel.mods',capability:'panel.mods',title:'原生实例模组管理',optionalDepends:['launcher.bootstrap','launcher.mods.native.list','launcher.mods.toggle','launcher.mods.remove','launcher.mods.import','launcher.mods.updates.modrinth','launcher.mods.updates.curseforge','launcher.mods.updates.apply','launcher.market.search','launcher.market.versions','launcher.market.install','launcher.tasks.get','launcher.task.cancel','launcher.accounts.settings.update'],setup:env=>setupNativePanel(env,'panel.mods'),execute:(input,env)=>mountNativePanel(env,'panel.mods',input,renderMods)})

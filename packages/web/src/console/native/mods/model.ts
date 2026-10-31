@@ -1,0 +1,4 @@
+import type {MarketVersion,ModUpdateInfo} from '@rhine/core'
+export function compatibleVersions(versions:MarketVersion[],gameVersion:string,loader:string):MarketVersion[]{if(!Array.isArray(versions))throw new Error("版本列表响应无效");if(!loader)return [];return versions.filter(version=>version.gameVersions?.includes(gameVersion)&&version.loaders?.includes(loader))}
+export function updateLabel(update:ModUpdateInfo):string{return update.status==='update'?'可更新至 '+(update.latestVersion??'新版本'):update.status==='current'?'已核对为最新':update.status==='error'?'检查失败：'+(update.error?.message??'未知错误'):'未识别 / 无匹配版本'}
+export function checkedUpdateInput(id:string,update:ModUpdateInfo){if(update.status!=='update'||!update.updateId)throw new Error('没有服务端核验的可用更新，请重新检查');return {id,updateId:update.updateId,diskName:update.diskName}}

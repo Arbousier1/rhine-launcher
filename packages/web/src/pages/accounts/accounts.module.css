@@ -1,0 +1,175 @@
+/**
+ * Accounts page: identity rows with pixelated avatars, and the device-code
+ * panel that must be readable across a room (large mono code).
+ */
+
+.row {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border: var(--rhine-hairline) solid var(--rhine-line);
+  background: var(--rhine-field);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--rhine-radius);
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-15);
+  color: var(--rhine-muted-strong);
+  text-transform: uppercase;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.name {
+  font-size: var(--rhine-fs-15);
+  color: var(--rhine-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nameText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.currentMark {
+  box-shadow: inset 2px 0 0 var(--rhine-accent);
+  background: var(--rhine-accent-soft);
+}
+
+/* device code ------------------------------------------------------- */
+
+.codeCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: var(--rhine-hairline) solid var(--rhine-line);
+  background: var(--rhine-field);
+}
+
+.codeValue {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-28);
+  letter-spacing: 0.14em;
+  line-height: 1.1;
+  color: var(--rhine-ink);
+  user-select: all;
+  word-break: break-all;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.codeSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-muted-strong);
+}
+
+.codeSteps li {
+  line-height: 1.5;
+}
+
+.countdown {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.link {
+  color: var(--rhine-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font: inherit;
+  padding: 0;
+}
+
+.link:hover {
+  color: var(--rhine-accent-bright);
+}
+
+/* create form ------------------------------------------------------- */
+
+.createForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.avatarPreview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.previewText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.previewName {
+  font-size: var(--rhine-fs-15);
+  color: var(--rhine-ink);
+  font-family: var(--rhine-font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.previewHint {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--rhine-line-soft);
+  margin: 4px 0;
+}

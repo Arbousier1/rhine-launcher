@@ -1,0 +1,9 @@
+import {describe,it,expect,vi} from 'vitest'
+import {GpuSubmissionGate} from '../src/console/gpu-submission'
+function fixture(){const gl={SYNC_GPU_COMMANDS_COMPLETE:1,TIMEOUT_EXPIRED:2,ALREADY_SIGNALED:3,WAIT_FAILED:4,CONDITION_SATISFIED:5,isContextLost:vi.fn(()=>false),fenceSync:vi.fn(()=>({})),clientWaitSync:vi.fn(()=>2),deleteSync:vi.fn(),flush:vi.fn()};return {gl,gate:new GpuSubmissionGate(gl as any)}}
+describe('nonblocking GPU submission admission',()=>{
+ it('never queues a second render while the submitted frame is incomplete',()=>{const {gl,gate}=fixture();expect(gate.ready()).toBe(true);gate.submitted();for(let i=0;i<20;i++)expect(gate.ready()).toBe(false);expect(gl.fenceSync).toHaveBeenCalledTimes(1);expect(gl.clientWaitSync.mock.calls.every(call=>call[1]===0&&call[2]===0)).toBe(true);expect(gate.deferredFrames).toBe(20)})
+ it('resumes with the latest application state after completion',()=>{const {gl,gate}=fixture();gate.submitted();gl.clientWaitSync.mockReturnValue(gl.CONDITION_SATISFIED);expect(gate.ready()).toBe(true);expect(gl.deleteSync).toHaveBeenCalledOnce();gate.submitted();expect(gl.fenceSync).toHaveBeenCalledTimes(2)})
+ it('releases the fence on teardown/context loss and can resume after restoration',()=>{const {gl,gate}=fixture();gate.submitted();gl.isContextLost.mockReturnValue(true);expect(gate.ready()).toBe(false);expect(gl.deleteSync).toHaveBeenCalledOnce();gl.isContextLost.mockReturnValue(false);expect(gate.ready()).toBe(true);gate.submitted();gate.dispose();gate.dispose();expect(gl.deleteSync).toHaveBeenCalledTimes(2)})
+ it('does not deadlock unsupported or failed fence implementations',()=>{const fallback=new GpuSubmissionGate({} as any);fallback.submitted();expect(fallback.ready()).toBe(true);const {gl,gate}=fixture();gate.submitted();gl.clientWaitSync.mockReturnValue(gl.WAIT_FAILED);expect(gate.ready()).toBe(true)})
+})

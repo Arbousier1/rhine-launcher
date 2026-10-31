@@ -1,0 +1,16 @@
+/**
+ * MiSans @font-face, local-only.
+ *
+ * Upstream ships content-hashed MiSans shards (misans-webfont@4.3.1) under
+ * /fonts; that package is a separate licensed download. The console therefore
+ * resolves the same family from an installed MiSans, and falls back to the
+ * system UI stack. Nothing else about the typography changes: every rule still
+ * asks for "MiSans" first.
+ */
+@font-face {
+  font-family: "MiSans";
+  src: local("MiSans"), local("MiSans-Regular"), local("MiSans VF"),
+    local("MiSans VF Regular"), local("MiSans Normal");
+  font-weight: 100 900;
+  font-display: swap;
+}

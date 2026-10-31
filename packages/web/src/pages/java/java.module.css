@@ -1,0 +1,129 @@
+/**
+ * Java runtime page: grouped runtime rows plus the managed download list.
+ */
+
+.row {
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+}
+
+.groupLabel {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 0 6px;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line);
+}
+
+.groupMajor {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-20);
+  line-height: 1;
+  color: var(--rhine-ink);
+}
+
+.groupHint {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.majorBadge {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: var(--rhine-hairline) solid var(--rhine-line);
+  background: var(--rhine-field);
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-muted-strong);
+}
+
+.managedMark {
+  border-color: var(--rhine-accent);
+  color: var(--rhine-accent);
+}
+
+.path {
+  font-family: var(--rhine-font-mono);
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.downloadList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.downloadRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+}
+
+.downloadRow:last-child {
+  border-bottom: none;
+}
+
+.downloadHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.downloadName {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.downloadTitle {
+  font-size: var(--rhine-fs-13);
+  color: var(--rhine-ink);
+}
+
+.downloadMeta {
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.taskBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--rhine-fs-12);
+  color: var(--rhine-muted);
+}
+
+.grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.recommend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: var(--rhine-hairline) solid var(--rhine-line-soft);
+  font-size: var(--rhine-fs-13);
+}
+
+.recommendRow:last-child {
+  border-bottom: none;
+}
