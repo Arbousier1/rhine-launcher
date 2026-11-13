@@ -16,12 +16,15 @@
     "start": "tsx packages/server/src/main.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "start:desktop": "node scripts/start-desktop.mjs",
+    "check:desktop": "node packages/desktop/scripts/check.mjs"
   },
   "devDependencies": {
-    "vitest": "^3.2.0",
+    "@types/node": "^24.0.0",
+    "electron": "^38.8.6",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
-    "@types/node": "^24.0.0"
+    "vitest": "^3.2.0"
   }
 }

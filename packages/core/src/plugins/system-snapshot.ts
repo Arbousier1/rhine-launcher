@@ -1,6 +1,8 @@
 import type { FeatureEnvironment } from '@rhine/plugin-api'
 import type { Account,Settings } from '../types.ts'
 import { resolveCurseforgeApiKey, resolveMicrosoftClientId } from '../config/secrets.ts'
+import { SECRET_ENV } from '../config/secrets.ts'
+import { builtinMicrosoftClientId } from '../accounts/builtin-app.ts'
 
 export function publicAccount(account:Account):Record<string,unknown>{
  const {accessToken,refreshToken,clientToken,...rest}=account
@@ -9,15 +11,17 @@ export function publicAccount(account:Account):Record<string,unknown>{
 export function publicSettings(settings:Settings):Record<string,unknown>{
  const {curseforgeApiKey,proxy,...rest}=settings
  const cf=resolveCurseforgeApiKey(curseforgeApiKey)
- const ms=resolveMicrosoftClientId(settings.microsoftClientId)
+ const ms=resolveMicrosoftClientId(settings.microsoftClientId,builtinMicrosoftClientId(SECRET_ENV.microsoftClientId))
  return {
   ...rest,
   curseforgeApiKey:undefined,
   hasCurseforgeApiKey:Boolean(cf.value),
   curseforgeKeyOrigin:cf.origin,
-  // Only the *origin* is public; an env-provided ID is still safe to expose
-  // because a public client ID appears in every authorize URL anyway.
+  // Only *where the id came from* is public. A public client id is not a
+  // secret (it appears in every authorize URL), but the status stays
+  // metadata-only so redaction rules never have to special-case it.
   microsoftClientIdFromEnv:ms.origin==='env',
+  microsoftClientIdBuiltin:ms.origin==='builtin',
   microsoftClientIdConfigured:Boolean(ms.value),
   proxy:proxy?{...proxy,password:undefined,hasPassword:Boolean(proxy.password)}:undefined,
  }

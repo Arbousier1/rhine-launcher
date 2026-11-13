@@ -14,10 +14,10 @@ export class PostResources {
     return value;
   }
 
-  target(name: string, options: { depth?: boolean; nearest?: boolean; count?: number; sampledDepth?: boolean } = {}): RenderTarget {
+  target(name: string, options: { depth?: boolean; nearest?: boolean; count?: number; sampledDepth?: boolean; samples?:number } = {}): RenderTarget {
     const target = this.own(new RenderTarget(1, 1, {
       type: HalfFloatType,
-      samples: 0,
+      samples: options.samples ?? 0,
       count: options.count ?? 1,
       depthBuffer: options.depth ?? false,
       stencilBuffer: false,

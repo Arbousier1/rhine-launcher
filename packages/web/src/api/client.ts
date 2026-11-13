@@ -12,8 +12,8 @@ import type {
   ServerEvent, Settings, TaskSnapshot,
 } from '@rhine/core'
 
-/** Base URL of the backend; same-origin when the bundle is served by it. */
-const BASE = ''
+import { apiUrl, websocketUrl } from './origin.ts'
+export { apiUrl, websocketUrl } from './origin.ts'
 
 /** Error raised for non-2xx responses; code is stable for UI branching. */
 export class RhineApiError extends Error {
@@ -32,7 +32,7 @@ export class RhineApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response
   try {
-    response = await fetch(BASE + path, {
+    response = await fetch(apiUrl(path), {
       headers: init?.body ? { 'content-type': 'application/json' } : undefined,
       ...init,
     })
@@ -223,11 +223,6 @@ let reconnectTimer: ReturnType<typeof setTimeout> | undefined
 let reconnectDelay = 1000
 let manuallyClosed = false
 
-/** WebSocket URL derived from the current page origin (https becomes wss). */
-export function websocketUrl(): string {
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-  return protocol + '//' + location.host + '/ws'
-}
 
 function ensureSocket(): void {
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return

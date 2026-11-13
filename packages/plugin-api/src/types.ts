@@ -29,7 +29,7 @@ export interface FeatureHttp<I = unknown, O = unknown> {
   status?: number
   notFoundMessage?: string
   /** Same single action, run as a cancellable background task. */
-  background?: { kind: string; title: string | ((input:I)=>string) }
+  background?: { kind: string; title: string | ((input:I)=>string); waitForResult?: boolean }
 }
 /** One manifest, one capability, one action. Collections are catalogs, never plugins. */
 export interface FeaturePlugin<I = any, O = any> {

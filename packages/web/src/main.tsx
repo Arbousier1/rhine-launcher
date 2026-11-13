@@ -13,6 +13,7 @@ import '@/styles/tokens.css'
 import '@/styles/base.css'
 import '@/styles/ui.css'
 import '@/styles/app.css'
+import '@/styles/desktop.css'
 import '@/styles/launch.css'
 import '@/motion/motion.css'
 import '@/plugins/catalog.ts'
@@ -20,7 +21,7 @@ import { webPlugins } from '@/plugins/registry.ts'
 import { App } from '@/app/App.tsx'
 import { AppRoutes } from '@/app/routes.tsx'
 
-if(!location.hash)history.replaceState(null,'',location.pathname+'#/settings')
+if(!location.hash)history.replaceState(null,'',location.pathname+'#/')
 const container = document.getElementById('root')
 if (!container) throw new Error('找不到 #root 挂载点')
 const root: HTMLElement = container

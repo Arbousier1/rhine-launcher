@@ -1,0 +1,336 @@
+/* Exact Rhine Life palette from .reference/RhineLabUI/src/theme-ui.ts.
+   The feature owns only these scoped rules; no Vue components or media are replaced. */
+html[data-rhine-theme="rhine-life"] {
+  --rl-ink: #080a08;
+  --rl-muted: #77756d;
+  --rl-line: #aaa59a;
+  --rl-paper: #eae5e1;
+  --rl-panel: #edebe4;
+  --rl-field: #e7e3d9;
+  --rl-accent: #9b7247;
+  --rl-ink-rgb: 8, 10, 8;
+  --rl-muted-rgb: 119, 117, 109;
+  --rl-line-rgb: 170, 165, 154;
+  --rl-paper-rgb: 234, 229, 225;
+  --rl-panel-rgb: 237, 235, 228;
+  --rl-field-rgb: 231, 227, 217;
+  --rl-accent-rgb: 155, 114, 71;
+  --rl-on-accent-rgb: var(--rl-ink-rgb);
+  --rl-shadow-rgb: var(--rl-ink-rgb);
+  --rl-color-scheme: light;
+  color: var(--rl-ink);
+  background-color: var(--rl-paper) !important;
+  color-scheme: var(--rl-color-scheme) !important;
+}
+
+/* Explicit opt-in only. Original Vue .dark/system preference does not change
+   the feature's warm-light default; a theme control can set this scoped marker. */
+html[data-rhine-theme="rhine-life"][data-rhine-theme-mode="dark"] {
+  --rl-ink: #e0e3dc;
+  --rl-muted: #a6b0b1;
+  --rl-line: #536166;
+  --rl-paper: #11181b;
+  --rl-panel: #202a2f;
+  --rl-field: #2a363b;
+  --rl-accent: #c5a16b;
+  --rl-ink-rgb: 224, 227, 220;
+  --rl-muted-rgb: 166, 176, 177;
+  --rl-line-rgb: 83, 97, 102;
+  --rl-paper-rgb: 17, 24, 27;
+  --rl-panel-rgb: 32, 42, 47;
+  --rl-field-rgb: 42, 54, 59;
+  --rl-accent-rgb: 197, 161, 107;
+  --rl-on-accent-rgb: var(--rl-paper-rgb);
+  --rl-shadow-rgb: var(--rl-paper-rgb);
+  --rl-color-scheme: dark;
+}
+
+/* Original Vuetify theme classes and root inline surface tokens remain intact.
+   Scoped important aliases override their paint, including teleported overlays. */
+html[data-rhine-theme="rhine-life"],
+html[data-rhine-theme="rhine-life"] :is(.v-theme--light, .v-theme--dark) {
+  --v-theme-background: var(--rl-paper-rgb) !important;
+  --v-theme-surface: var(--rl-panel-rgb) !important;
+  --v-theme-surface-bright: var(--rl-panel-rgb) !important;
+  --v-theme-surface-light: var(--rl-field-rgb) !important;
+  --v-theme-surface-variant: var(--rl-field-rgb) !important;
+  --v-theme-on-background: var(--rl-ink-rgb) !important;
+  --v-theme-on-surface: var(--rl-ink-rgb) !important;
+  --v-theme-on-surface-variant: var(--rl-muted-rgb) !important;
+  --v-theme-primary: var(--rl-accent-rgb) !important;
+  --v-theme-primary-darken-1: var(--rl-accent-rgb) !important;
+  --v-theme-accent: var(--rl-accent-rgb) !important;
+  --v-theme-on-primary: var(--rl-on-accent-rgb) !important;
+  --v-theme-on-accent: var(--rl-on-accent-rgb) !important;
+  --v-border-color: var(--rl-line-rgb) !important;
+  --v-border-opacity: .55 !important;
+  --color-primary: var(--rl-accent) !important;
+  --color-accent: var(--rl-accent) !important;
+  --color-border: rgba(var(--rl-line-rgb), .55) !important;
+  --color-highlight-bg: rgba(var(--rl-accent-rgb), .12) !important;
+  --color-secondary-text: var(--rl-muted) !important;
+  --color-sidebar-bg: var(--rl-panel) !important;
+  --color-appbar-bg: var(--rl-panel) !important;
+  --color-card-bg: var(--rl-panel) !important;
+  --color-bg: var(--rl-paper) !important;
+  --icon-color: var(--rl-ink) !important;
+  --icon-color-hovered: var(--rl-accent) !important;
+  --highlight-color: var(--rl-accent) !important;
+  --surface-radius: 10px !important;
+  --surface-dialog-radius: 14px !important;
+  --surface-tooltip-radius: 6px !important;
+  --surface-menu-item-radius: 6px !important;
+  --surface-border: 1px solid rgba(var(--rl-line-rgb), .6) !important;
+  --surface-shadow: 0 12px 30px -16px rgba(var(--rl-shadow-rgb), .25) !important;
+  --surface-bg: rgba(var(--rl-panel-rgb), .98) !important;
+  --card-radius: 10px !important;
+  --card-subsection-radius: 8px !important;
+  --card-item-radius: 6px !important;
+  --card-bg: var(--rl-panel) !important;
+  --card-border: 1px solid rgba(var(--rl-line-rgb), .5) !important;
+  --card-subsection-bg: var(--rl-panel) !important;
+  --card-subsection-border: var(--card-border) !important;
+  --card-row-bg: var(--rl-panel) !important;
+  --card-row-border: var(--card-border) !important;
+  --card-row-border-hover: 1px solid var(--rl-accent) !important;
+  --card-prominent-radius: 12px !important;
+  --card-clickable-radius: 10px !important;
+  --card-clickable-bg: var(--rl-panel) !important;
+  --card-clickable-border: var(--card-border) !important;
+  --card-clickable-border-hover: 1px solid var(--rl-accent) !important;
+  --card-clickable-shadow-hover: 0 8px 20px -12px rgba(var(--rl-shadow-rgb), .25) !important;
+  --panel-radius: 10px !important;
+  --panel-bg: var(--rl-field) !important;
+  --panel-border: var(--card-border) !important;
+  color-scheme: var(--rl-color-scheme) !important;
+}
+
+html[data-rhine-theme="rhine-life"] body,
+html[data-rhine-theme="rhine-life"] .v-application {
+  color: var(--rl-ink) !important;
+  background-color: var(--rl-paper) !important;
+}
+
+/* Inherit readable launcher typography without touching Material Icons' own
+   font-family, ligatures, sizing or any skin/canvas/image rendering properties. */
+html[data-rhine-theme="rhine-life"] .v-application {
+  font-family: 'MiSans', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* AppBackground is this direct child only. News, hero/poster images, screenshots
+   and player skins are elsewhere and never match this wallpaper-only selector. */
+html[data-rhine-theme="rhine-life"] .v-application__wrap > div.absolute.z-0.h-full.w-full {
+  display: none !important;
+}
+
+html[data-rhine-theme="rhine-life"] .header-overlay {
+  background-image: linear-gradient(180deg, var(--rl-paper), rgba(var(--rl-paper-rgb), .88) 65%, transparent) !important;
+}
+
+html[data-rhine-theme="rhine-life"] .v-system-bar {
+  color: var(--rl-ink) !important;
+  background-color: var(--rl-panel) !important;
+  border-bottom: 1px solid rgba(var(--rl-line-rgb), .45);
+}
+
+html[data-rhine-theme="rhine-life"] :is(.system-bar-badge, .system-bar-back-btn) {
+  color: var(--rl-ink) !important;
+}
+
+html[data-rhine-theme="rhine-life"] :is(.sidebar, .sidebar-horizontal, .sidebar-notch__container) {
+  background-color: var(--rl-panel) !important;
+  border-color: rgba(var(--rl-line-rgb), .55) !important;
+  box-shadow: 1px 0 0 rgba(var(--rl-line-rgb), .45);
+}
+
+html[data-rhine-theme="rhine-life"] :is(.sidebar__divider, .sidebar-notch__divider) {
+  background-color: rgba(var(--rl-line-rgb), .55) !important;
+}
+
+html[data-rhine-theme="rhine-life"] .sidebar-item__content {
+  border-radius: 10px;
+}
+
+html[data-rhine-theme="rhine-life"] .sidebar-item--clickable:not(.sidebar-item--colored):hover .sidebar-item__content {
+  background-color: var(--rl-field) !important;
+  color: var(--rl-ink) !important;
+}
+
+html[data-rhine-theme="rhine-life"] .sidebar-item--active:not(.sidebar-item--colored) .sidebar-item__content,
+html[data-rhine-theme="rhine-life"] .sidebar-item.router-link-active:not(.sidebar-item--colored) .sidebar-item__content {
+  background-color: rgba(var(--rl-accent-rgb), .18) !important;
+  color: var(--rl-ink) !important;
+}
+
+html[data-rhine-theme="rhine-life"] .sidebar-item:not(.sidebar-item--colored) .sidebar-item__indicator {
+  background-color: var(--rl-accent) !important;
+}
+
+/* Calm, outlined PCL/HMCL-like surfaces, retaining the original layout, drag
+   highlights, semantic status colors, ripple feedback and disabled states. */
+html[data-rhine-theme="rhine-life"] .home-card:not(.highlighted) {
+  background-color: var(--rl-panel) !important;
+  color: var(--rl-ink) !important;
+  border: 1px solid rgba(var(--rl-line-rgb), .5);
+  box-shadow: 0 5px 16px -12px rgba(var(--rl-shadow-rgb), .2);
+}
+
+html[data-rhine-theme="rhine-life"] :is(.v-card-title, .ellan-title, .ellan-h2, .ellan-news-title, .ellan-link__title) {
+  color: var(--rl-ink);
+}
+
+html[data-rhine-theme="rhine-life"] :is(.v-card-subtitle, .v-list-item-subtitle, .ellan-slogan, .ellan-news-desc, .ellan-link__desc, .ellan-ip__label, .ellan-h2-sub, .ellan-tip, .ellan-news-meta) {
+  color: var(--rl-muted) !important;
+  opacity: 1;
+}
+
+html[data-rhine-theme="rhine-life"] :is(.ellan-eyebrow, .ellan-more, .ellan-news-tag) {
+  color: var(--rl-accent) !important;
+}
+
+html[data-rhine-theme="rhine-life"] :is(.ellan-news-card, .ellan-link) {
+  color: var(--rl-ink);
+  background-color: var(--rl-panel) !important;
+  border-color: rgba(var(--rl-line-rgb), .6) !important;
+  border-radius: 10px;
+}
+
+html[data-rhine-theme="rhine-life"] :is(.ellan-news-card, .ellan-link):hover {
+  background-color: var(--rl-field) !important;
+  border-color: var(--rl-accent) !important;
+}
+
+html[data-rhine-theme="rhine-life"] .ellan-link--primary {
+  border-color: var(--rl-accent) !important;
+}
+
+html[data-rhine-theme="rhine-life"] .ellan-hero {
+  border-color: rgba(var(--rl-line-rgb), .65);
+  box-shadow: 0 8px 24px -16px rgba(var(--rl-shadow-rgb), .22);
+}
+
+html[data-rhine-theme="rhine-life"] .v-btn:not(.v-btn--icon) {
+  border-radius: 6px !important;
+  text-transform: none;
+}
+
+html[data-rhine-theme="rhine-life"] .v-field {
+  color: var(--rl-ink);
+  background-color: var(--rl-field) !important;
+  border-radius: 6px;
+}
+
+html[data-rhine-theme="rhine-life"] :is(.v-field input, .v-field textarea)::placeholder {
+  color: var(--rl-muted);
+}
+
+html[data-rhine-theme="rhine-life"] :is(button, a, [role="button"]):focus-visible {
+  outline: 2px solid var(--rl-accent);
+  outline-offset: 2px;
+}
+
+html[data-rhine-theme="rhine-life"] .visible-scroll::-webkit-scrollbar-thumb,
+html[data-rhine-theme="rhine-life"] .visible-scroll ::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--rl-line-rgb), .8);
+}
+
+/* Original components have literal dark text/surfaces; retain contrast in warm light. */
+html[data-rhine-theme="rhine-life"] :is(.section-title,.instance-name,.news-title,.home-title) { color: var(--rl-ink) !important; }
+html[data-rhine-theme="rhine-life"] :is(.instance-version,.news-description,.news-meta,.news-date,.news-category) { color: var(--rl-muted) !important; }
+html[data-rhine-theme="rhine-life"] :is(.news-carousel,.news-slide,.news-info) { background: var(--rl-panel) !important; }
+html[data-rhine-theme="rhine-life"] .news-info { border-left: 1px solid rgba(var(--rl-line-rgb),.35); }
+html[data-rhine-theme="rhine-life"] .news-read-more { color: var(--rl-accent) !important; }
+
+/* Workstation finish: exact original palette, softer boundaries and one clear
+   primary action. This layer owns paint, never navigation or instance state. */
+html[data-rhine-theme="rhine-life"] .app-layout {
+  background: radial-gradient(ellipse at 95% 0%, rgba(var(--rl-panel-rgb),.8), transparent 62%), var(--rl-paper);
+}
+html[data-rhine-theme="rhine-life"] .v-system-bar {
+  background: var(--rl-panel) !important;
+  border-bottom-color: rgba(var(--rl-line-rgb),.3);
+}
+html[data-rhine-theme="rhine-life"] .v-system-bar::before { color: var(--rl-ink); }
+html[data-rhine-theme="rhine-life"] .system-bar-badge { color: var(--rl-muted) !important; }
+html[data-rhine-theme="rhine-life"] .system-bar-badge:hover { color: var(--rl-ink) !important; }
+html[data-rhine-theme="rhine-life"] .palette-hotkey { border-color: rgba(var(--rl-line-rgb),.3) !important; background: rgba(var(--rl-field-rgb),.5); }
+html[data-rhine-theme="rhine-life"] .sidebar { box-shadow: none; border-right: 1px solid rgba(var(--rl-line-rgb),.25); }
+html[data-rhine-theme="rhine-life"] .sidebar__divider { background: rgba(var(--rl-line-rgb),.4) !important; }
+html[data-rhine-theme="rhine-life"] .sidebar-item__content { color: var(--rl-muted); }
+html[data-rhine-theme="rhine-life"] .sidebar-item.router-link-active:not(.sidebar-item--colored) .sidebar-item__content { background: rgba(var(--rl-accent-rgb),.12) !important; }
+html[data-rhine-theme="rhine-life"] .me-layout > .me-profile-panel {
+  background: rgba(var(--rl-panel-rgb),.54); border-left: 0; border-right: 1px solid rgba(var(--rl-line-rgb),.25); backdrop-filter: none;
+}
+html[data-rhine-theme="rhine-life"] .me-profile-panel::before,
+html[data-rhine-theme="rhine-life"] .instances-section::before,
+html[data-rhine-theme="rhine-life"] .news-section > .section-header::after { color: var(--rl-muted); }
+html[data-rhine-theme="rhine-life"] .user-account-switcher__identity {
+  background: var(--rl-panel); border: 1px solid rgba(var(--rl-line-rgb),.32); box-shadow: 0 2px 8px -6px rgba(var(--rl-shadow-rgb),.12);
+}
+html[data-rhine-theme="rhine-life"] .user-account-switcher__identity:hover { border-color: rgba(var(--rl-accent-rgb),.55); }
+html[data-rhine-theme="rhine-life"] .user-account-switcher__identity > .flex-col > :last-child { color: var(--rl-muted); opacity: 1; }
+html[data-rhine-theme="rhine-life"] .user-account-switcher__identity > button:not(:hover):not(:focus-visible) { color: var(--rl-muted) !important; }
+html[data-rhine-theme="rhine-life"] .skin-cape-card {
+  background: var(--rl-panel); border: 1px solid rgba(var(--rl-line-rgb),.3);
+  box-shadow: 0 4px 14px -10px rgba(var(--rl-shadow-rgb),.13);
+}
+html[data-rhine-theme="rhine-life"] .skin-cape-card > .cursor-default {
+  background: radial-gradient(ellipse at 50% 65%, rgba(var(--rl-accent-rgb),.09), transparent 64%),
+    linear-gradient(rgba(var(--rl-line-rgb),.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--rl-line-rgb),.07) 1px, transparent 1px);
+  background-size: auto, 22px 22px, 22px 22px;
+}
+html[data-rhine-theme="rhine-life"] .skin-cape-card .skin-row { border-color: rgba(var(--rl-line-rgb),.2) !important; }
+html[data-rhine-theme="rhine-life"] .skin-cape-card .skin-row .v-btn { color: var(--rl-ink) !important; }
+html[data-rhine-theme="rhine-life"] .skin-cape-card .skin-row .v-btn__underlay { background: var(--rl-accent); opacity: .12; }
+html[data-rhine-theme="rhine-life"] .friends-section > .text-center { color: var(--rl-muted); border-top: 1px solid rgba(var(--rl-line-rgb),.3); }
+html[data-rhine-theme="rhine-life"] .my-stuff-page .section-icon { color: var(--rl-accent) !important; }
+html[data-rhine-theme="rhine-life"] .instances-section > .section-header > .d-flex > .v-btn {
+  color: var(--rl-ink) !important; background: rgba(var(--rl-accent-rgb),.1) !important;
+  border: 1px solid rgba(var(--rl-accent-rgb),.24); box-shadow: none;
+}
+html[data-rhine-theme="rhine-life"] .instances-section .v-btn-toggle { background: rgba(var(--rl-line-rgb),.09); border: 1px solid rgba(var(--rl-line-rgb),.16); }
+html[data-rhine-theme="rhine-life"] .instances-section .v-btn-toggle .v-btn { color: var(--rl-muted); }
+html[data-rhine-theme="rhine-life"] .instances-section .v-btn-toggle .v-btn--active { background: var(--rl-panel); color: var(--rl-ink); box-shadow: 0 1px 3px rgba(var(--rl-shadow-rgb),.07); }
+html[data-rhine-theme="rhine-life"] .search-field .v-field { background: rgba(var(--rl-panel-rgb),.62) !important; }
+html[data-rhine-theme="rhine-life"] .search-field .v-field__outline { --v-field-border-opacity: .22; }
+html[data-rhine-theme="rhine-life"] .search-field .v-field--focused .v-field__outline { --v-field-border-opacity: 1; }
+html[data-rhine-theme="rhine-life"] .instance-item {
+  color: var(--rl-ink); background: var(--rl-panel); border: 1px solid rgba(var(--rl-line-rgb),.35) !important;
+  box-shadow: 0 3px 12px -8px rgba(var(--rl-shadow-rgb),.14);
+}
+html[data-rhine-theme="rhine-life"] .instance-item--active {
+  border-color: rgba(var(--rl-accent-rgb),.6) !important;
+  background: radial-gradient(ellipse at 95% 20%, rgba(var(--rl-accent-rgb),.09), transparent 62%), var(--rl-panel);
+  box-shadow: inset 3px 0 0 var(--rl-accent), 0 6px 20px -12px rgba(var(--rl-shadow-rgb),.18);
+}
+html[data-rhine-theme="rhine-life"] .instance-item:hover {
+  border-color: rgba(var(--rl-accent-rgb),.8) !important;
+  box-shadow: 0 6px 18px -10px rgba(var(--rl-shadow-rgb),.2);
+}
+html[data-rhine-theme="rhine-life"] .instance-item--active:hover { box-shadow: inset 3px 0 0 var(--rl-accent), 0 8px 22px -12px rgba(var(--rl-shadow-rgb),.24); }
+html[data-rhine-theme="rhine-life"] .instance-avatar { background: rgba(var(--rl-accent-rgb),.08); }
+html[data-rhine-theme="rhine-life"] .instance-play-button {
+  color: var(--rl-panel) !important; background: var(--rl-ink) !important;
+  box-shadow: 0 4px 10px -5px rgba(var(--rl-shadow-rgb),.32);
+}
+html[data-rhine-theme="rhine-life"] .instance-play-button .v-icon { color: inherit !important; }
+html[data-rhine-theme="rhine-life"] .instance-play-button:hover { outline: 1px solid var(--rl-accent); outline-offset: 3px; }
+html[data-rhine-theme="rhine-life"] .news-section { border-top: 1px solid rgba(var(--rl-line-rgb),.32); }
+html[data-rhine-theme="rhine-life"] .news-carousel-wrapper { border: 1px solid rgba(var(--rl-line-rgb),.25); box-shadow: 0 3px 12px -10px rgba(var(--rl-shadow-rgb),.12); }
+html[data-rhine-theme="rhine-life"] .news-info { border-left: 0; }
+html[data-rhine-theme="rhine-life"] .news-gradient { background: linear-gradient(90deg, transparent, var(--rl-panel)) !important; }
+html[data-rhine-theme="rhine-life"] .news-dot { color: var(--rl-muted) !important; }
+html[data-rhine-theme="rhine-life"] .news-read-more { color: var(--rl-ink) !important; }
+html[data-rhine-theme="rhine-life"] .news-read-more .v-icon { color: var(--rl-accent); }
+html[data-rhine-theme="rhine-life"] .news-carousel .v-carousel__controls__item { color: var(--rl-muted) !important; }
+html[data-rhine-theme="rhine-life"] .news-carousel .v-carousel__controls__item.v-btn--active { color: var(--rl-accent) !important; }
+html[data-rhine-theme="rhine-life"] .news-carousel .v-carousel__controls__item :is(.v-btn__overlay,.v-btn__underlay) { background: transparent; }
+html[data-rhine-theme="rhine-life"] .news-carousel .v-window__controls .v-btn {
+  color: var(--rl-ink) !important; background: rgba(var(--rl-panel-rgb),.9) !important;
+  border: 1px solid rgba(var(--rl-line-rgb),.3); opacity: 1;
+}
+html[data-rhine-theme="rhine-life"] .v-btn:not(.v-btn--icon) { border-radius: 8px !important; }
+html[data-rhine-theme="rhine-life"] .v-field { border-radius: 9px; }
+
+

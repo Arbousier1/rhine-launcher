@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import { BackSide, FrontSide } from "three";
+import { BackSide, FrontSide, Texture, HalfFloatType, LinearFilter, LinearMipmapLinearFilter, LinearSRGBColorSpace, Vector2 } from "three";
 import { PhysicalLightingModel } from "three/webgpu";
 import type { MeshPhysicalNodeMaterial, Node, NodeBuilder, TextureNode } from "three/webgpu";
 import {
@@ -29,13 +29,27 @@ import {
   int, ior, length, log, metalness, mix, modelWorldMatrix, normalWorld, normalize,
   positionWorld, refract, roughness, screenSize, specularColor, specularF90,
   textureBicubicLevel, thickness, transmission, vec2, vec3, vec4,
-  viewportMipTexture, viewportOpaqueMipTexture,
+  texture, screenUV,
 } from "three/tsl";
 import { archiveTransmissionLodNode } from "./surface-nodes.ts";
 
 // @types/three 0.183.1 erases the texture type of these public factories.
-const viewportBackSideTexture = viewportMipTexture() as TextureNode;
-const viewportFrontSideTexture = viewportOpaqueMipTexture() as TextureNode;
+function filteredCapture(){const texture=new Texture({width:1,height:1,depth:1});texture.isRenderTargetTexture=true;texture.magFilter=LinearFilter;texture.minFilter=LinearMipmapLinearFilter;texture.type=HalfFloatType;texture.colorSpace=LinearSRGBColorSpace;texture.generateMipmaps=true;return texture}
+// Bicubic reconstruction requires bilinear taps, not FramebufferTexture default nearest.
+export const archiveBacksideCapture=filteredCapture(),archiveOpaqueCapture=filteredCapture();
+archiveBacksideCapture.name='ArchivePost.transmission';archiveOpaqueCapture.name='ArchivePost.opaque';
+// Fixed owned textures, not viewport nodes: lazy viewport clones would switch
+// the source back to the beauty target during the forward material draw.
+const viewportBackSideTexture=texture(archiveBacksideCapture,screenUV) as TextureNode;
+const viewportFrontSideTexture=texture(archiveOpaqueCapture,screenUV) as TextureNode;
+export function archiveTransmissionTexture(side:number=FrontSide){return side===BackSide?viewportBackSideTexture:viewportFrontSideTexture}
+export function captureArchiveTransmissionSource(value:unknown,side:number){
+ const renderer=value as {getRenderTarget():{width:number;height:number;texture?:unknown}|null;getDrawingBufferSize(size:Vector2):Vector2;copyFramebufferToTexture(texture:Texture):void;copyTextureToTexture?(source:unknown,destination:Texture):void};
+ const frame=renderer.getRenderTarget(),size=frame?new Vector2(frame.width,frame.height):renderer.getDrawingBufferSize(new Vector2());
+ const target=side===BackSide?archiveBacksideCapture:archiveOpaqueCapture;
+ if(target.image.width!==size.x||target.image.height!==size.y){target.image.width=size.x;target.image.height=size.y;target.needsUpdate=true}
+ if(frame?.texture&&renderer.copyTextureToTexture)renderer.copyTextureToTexture(frame.texture,target);else renderer.copyFramebufferToTexture(target);return target;
+}
 // The runtime supports component-wise vec3 log/exp; r183 typings only expose float.
 const vectorLog = log as unknown as (value: Node<"vec3">) => Node<"vec3">;
 const vectorExp = exp as unknown as (value: Node<"vec3">) => Node<"vec3">;

@@ -8,6 +8,7 @@ import { AUTHORIZATION_PENDING, parseTokenBody, tokenErrorCode, oauthErrorHint, 
 import { AccountError, throwIfAborted } from '../../../accounts/errors.ts'
 import { FORM_HEADERS, formEncode, requestJson, readAccountRequest, requestString } from '../../../accounts/http.ts'
 import { redactAccount } from '../../../accounts/repository.ts'
+import { clearMicrosoftFailure, recordMicrosoftFailure } from '../../../accounts/auth-diagnostics.ts'
 
 export default defineFeature<{ flowId?: string } | undefined, Promise<Account>>({
   id: 'auth.microsoft.complete', capability: 'auth.microsoft.complete', title: '完成微软设备码登录', depends: ACCOUNT_WRITE_DEPENDS,
@@ -58,9 +59,11 @@ export default defineFeature<{ flowId?: string } | undefined, Promise<Account>>(
       throwIfAborted(signal)
       env.task?.throwIfCancelled()
       const stored = await accountRepository(env).upsert(account)
+      clearMicrosoftFailure(env)
       finishMicrosoftFlow(state, flow.flowId)
       return stored
     } catch (error) {
+      if (!signal.aborted) recordMicrosoftFailure(env, error, flow)
       if (signal.aborted) {
         const reason = state.terminalFlows.get(flow.flowId)
         if (reason === 'EXPIRED_TOKEN') throw new AccountError('设备码已过期（expired_token），请重新登录', 'EXPIRED_TOKEN', { flowId: flow.flowId })

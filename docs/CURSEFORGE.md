@@ -74,6 +74,28 @@ PCL2 还会在请求 `forgecdn.net` 时也附加 `x-api-key`（`SecretHeadersSig
 
 关闭镜像：构造时传 `mirror: null`。
 
+## 3b. HMCL 的搜索实现逐项对照
+
+以下逐行核对自 `CurseForgeRemoteAddonRepository.search()`（本地 `.reference/HMCL`）：
+
+| HMCL 的做法 | 本仓库对应 | 状态 |
+| --- | --- | --- |
+| `query.put("gameId", "432")` | `MINECRAFT_GAME_ID = 432` | ✅ 一致 |
+| `query.put("classId", toSectionId(type))`，**总是发送** | 默认 `classId=6`，可传 `projectType` | ✅ 已对齐 |
+| `categoryId`（仅当选中分类） | `params.categoryId` | ✅ |
+| `gameVersion` / `searchFilter` | `gameVersion` / `searchFilter` | ✅ |
+| `sortField`：RELEVANCY=1、POPULARITY=2、LAST_UPDATED=3、TOTAL_DOWNLOADS=6、DATE_CREATED=11 | `curseForgeSortField()` 同值 | ✅ |
+| `sortOrder`：ASC/DESC | `params.sortOrder`，默认 `desc` | ✅ |
+| `index = pageOffset * pageSize` | `index = offset`（调用方传绝对偏移） | ✅ 等价 |
+| `pageSize` | `pageSize`，上限 50 | ✅ |
+| `withApiKey()`：仅官方前缀加 `X-API-KEY` | 仅官方目标带 `x-api-key` | ✅ |
+| `getDownloadCandidates(...)` 多候选轮询，失败聚合 suppressed 异常 | 官方 → MCIM 镜像双目标 | ✅ 更强（无 Key 也可用） |
+| `Semaphore(16)` 限制并发 | 由宿主并发设置约束 | ⚠️ 未逐一对齐 |
+| `calculateTotalPages` 用 `min(totalCount, 10000)` | 直接回传 `totalCount` | ⚠️ 未截断 |
+
+两个 ⚠️ 是**有意的差异**，不是遗漏：并发由启动器统一设置控制；`totalCount` 未截断是
+因为我们的分页上限本来就在调用侧约束（`offset` ≤ 100000）。
+
 ## 4. 搜索是怎么解决的
 
 搜索是**唯一**需要凭据的环节。本仓库用两级策略解决：
@@ -95,13 +117,34 @@ PCL2 还会在请求 `forgecdn.net` 时也附加 `x-api-key`（`SecretHeadersSig
 CurseForge 搜索接口**不会**默认只返回模组。不带 `classId` 时会混入整合包（classId 4471）
 和资源包，实测同样的 `jei` 查询：
 
-| 请求 | 结果 |
-| --- | --- |
-| 不带 `classId` | 251 条，混有整合包与资源包 |
-| `classId=6`（模组） | 202 条，全部是模组，JEI 排第一 |
+| 请求 | `pagination.totalCount` | 首屏 classId |
+| --- | --- | --- |
+| 不带 `classId` | 612（混入整合包与资源包） | `{"6":20}` |
+| `classId=6`（模组，HMCL 的做法） | 463（全部是模组） | `{"6":20}` |
 
-原生模组面板现已显式传 `projectType: 'mod'`，对应 `classId=6`。
-`packages/core/test/market.test.ts` 有一条断言锁定这个参数。
+注意两者**首屏看起来一样**，差别在总数和后续分页——翻几页就会开始出现整合包，
+这也是这个坑不容易被发现的原因。
+
+现在 `CurseForgeClient.search()` **默认就发 `classId=6`**（对齐 HMCL 的
+`query.put("classId", ...)` 总是发送），调用方不传 `projectType` 也不会再混入整合包。
+`packages/core/test/market.test.ts` 有断言锁定这个默认值。
+
+### 依赖关系枚举：3 是必装，不是冲突
+
+CurseForge 的 `relationType` 与直觉相反，HMCL 的 `RELATION_TYPE` 表写明：
+
+| 值 | CurseForge 官方名 | HMCL 映射 | 本仓库映射 |
+| --- | --- | --- | --- |
+| 1 | EmbeddedLibrary | EMBEDDED | `embedded` |
+| 2 | OptionalDependency | OPTIONAL | `optional` |
+| 3 | **RequiredDependency** | **REQUIRED** | **`required`** |
+| 4 | Tool | OPTIONAL | `optional` |
+| 5 | Incompatible | INCOMPATIBLE | `incompatible` |
+| 6 | Include（CF 会隐藏） | EMBEDDED | `embedded` |
+
+早期实现把 `3` 当成 `incompatible`，直接后果是**安装模组时漏掉必装前置**，游戏启动后
+才报缺依赖崩溃。已修正为 `curseForgeDependencyType()`，并有逐项断言。
+实测真实数据（`jei` 的 1.20.1 文件）确实返回 `relationType: 3` 的必装依赖。
 
 ### 为什么不直接内置 Key
 
@@ -109,6 +152,21 @@ CurseForge 搜索接口**不会**默认只返回模组。不带 `classId` 时会
 PCL2 和 HMCL 也都选择由使用者自己提供。若要让终端用户「零配置」用上搜索，
 正确做法是自建一个持有 Key 的转发服务，客户端只连它——本仓库的 `baseUrl`
 与 `mirror` 选项已支持这种部署，无需再改客户端代码。
+
+> **注意与微软应用 ID 的区别**：微软的 App ID 是**公开标识**（出现在每个授权 URL，配的是
+> 无 secret 的公共客户端流），所以可以随发行版内置；CurseForge 的 API Key 是**真正的密钥**，
+> 一旦内置给所有人就等于泄露。两者不能套用同一策略。
+
+### 5b. 当前推荐：零配置走镜像（本仓库已实测可用）
+
+默认配置下**不需要任何 CurseForge 凭据**：`CurseForgeClient` 会在官方接口拒绝时自动回退到
+MCIM 镜像（PCL2 的同款映射）。2026-11-03 实测：
+
+| 请求 | 结果 |
+| --- | --- |
+| 官方 `api.curseforge.com`（无 Key） | HTTP 403 `Forbidden: API Key missing or invalid` |
+| `mod.mcimirror.top/curseforge`（无 Key） | HTTP 200，`jei` 命中 459 条 |
+| 本仓库 `GET /api/market/curseforge/search?query=jei&projectType=mod` | 200，返回真实项目与版本 |
 
 ## 5. 申请自己的 Key（可选）
 

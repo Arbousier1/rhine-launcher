@@ -13,7 +13,8 @@
     "@deepseek-ai/cosmokit": "1.8.6",
     "@deepseek-ai/dsh-atomic-write": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5",
-    "@rhine/plugin-api": "workspace:*"
+    "@rhine/plugin-api": "workspace:*",
+    "@rhine/ellan-ui": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

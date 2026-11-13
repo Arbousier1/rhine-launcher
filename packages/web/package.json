@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "vite --config vite.console.config.ts",
-    "build": "node scripts/verify-rhine-assets.mjs && vite build --config vite.console.config.ts && vite build --config vite.config.ts",
+    "build": "node scripts/verify-rhine-assets.mjs && vite build --config vite.config.ts && vite build --config vite.console.config.ts && vite build --config vite.default.config.ts",
     "preview": "vite preview",
-    "build:console": "vite build --config vite.console.config.ts",
+    "build:experimental": "vite build --config vite.console.config.ts",
     "build:app": "vite build --config vite.config.ts",
     "verify:assets": "node scripts/verify-rhine-assets.mjs"
   },

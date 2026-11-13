@@ -8,6 +8,7 @@ import { MICROSOFT_SCOPE, parseTokenBody, tokenErrorCode, oauthErrorHint, type T
 import { AccountError } from '../../../accounts/errors.ts'
 import { FORM_HEADERS, formEncode, requestJson } from '../../../accounts/http.ts'
 import { redactAccount } from '../../../accounts/repository.ts'
+import { clearMicrosoftFailure, recordMicrosoftFailure } from '../../../accounts/auth-diagnostics.ts'
 
 export default defineFeature<{ id: string }, Promise<Account>>({
   id: 'auth.microsoft.refresh', capability: 'auth.microsoft.refresh', title: '刷新微软令牌', depends: ['account.get', ...ACCOUNT_WRITE_DEPENDS],
@@ -32,7 +33,14 @@ export default defineFeature<{ id: string }, Promise<Account>>({
     const tokens = parseTokenBody(response.body)
     if (!tokens) throw new AccountError('微软没有返回新的访问令牌，请重试', 'INVALID_TOKEN_RESPONSE')
     env.task?.throwIfCancelled()
-    const fresh = await exchangeMicrosoftForMinecraft(tokens, config, env.signal, account)
-    return accountRepository(env).upsert(fresh)
+    try {
+      const fresh = await exchangeMicrosoftForMinecraft(tokens, config, env.signal, account)
+      const stored = await accountRepository(env).upsert(fresh)
+      clearMicrosoftFailure(env)
+      return stored
+    } catch (error) {
+      if (!env.signal.aborted) recordMicrosoftFailure(env, error, config)
+      throw error
+    }
   },
 })

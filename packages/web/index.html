@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f2f0eb" />
+    <meta name="description" content="Rhine Launcher — Minecraft 启动器" />
+    <title>Rhine Launcher</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      html,body{margin:0;background:#f2f0eb;color:#171713;font-family:'MiSans','PingFang SC','Microsoft YaHei',system-ui,sans-serif}
+      #stage{position:fixed;inset:0}
+      .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#171713;color:#f2f0eb;padding:8px 16px;border-radius:6px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .18s;z-index:20}
+      .toast.visible{opacity:1}
+    </style>
+  </head>
+  <body>
+    <main id="stage"></main><div id="toast" class="toast" role="status"></div>
+    <noscript>Rhine Launcher 需要启用 JavaScript。</noscript>
+    <script type="module" src="/src/default-app.ts"></script>
+  </body>
+</html>

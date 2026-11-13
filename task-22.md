@@ -1,0 +1,3 @@
+# task-22: approved theme write scopes
+
+Write ONLY packages/ellan-ui/src/plugins/theme-life.plugin.ts and packages/ellan-ui/src/styles/theme-life.css. No board permission is required; Lead owns task. Implement now. Source palette light #080a08/#77756d/#aaa59a/#eae5e1/#edebe4/#e7e3d9/#9b7247; dark #e0e3dc/#a6b0b1/#536166/#11181b/#202a2f/#2a363b/#c5a16b. Independent defineFeature ui.theme.rhine-life with setup CSS/style marker, onDispose removes own style/attr. CSS inline; execute required (return current theme metadata). Preserve real UI/logic/icons/news/skins; hide global wallpaper only. No layout/ref/config/deps/activation edits. Root style.d.ts declares css?inline. Do not wait for unreachable team board.

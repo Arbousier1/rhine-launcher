@@ -17,6 +17,7 @@ import {
   AlertIcon, FolderIcon, PlusIcon, RefreshIcon, SearchIcon, TrashIcon,
 } from '@/ui/icons'
 import { PageHead } from '@/features/common/PageHead'
+import { mcmodLink } from '@/features/mods/mcmod'
 import { Notice, Placeholder, StatStrip, Tile } from '@/features/common/toolbar'
 import { useCurrentInstance } from '@/features/common/useCurrentInstance'
 import { formatBytes, formatRelativeTime } from '@/features/format/index.ts'
@@ -453,6 +454,16 @@ function ModRow({ mod, busy, selected, onSelect, onToggle, onDelete }: {
 /* detail                                                              */
 /* ------------------------------------------------------------------ */
 
+/** PCL2-style encyclopedia entry: direct page when known, else a search. */
+function WikiLink({ mod }: { mod: ModFile }) {
+  const link = mcmodLink({ name: displayName(mod) })
+  return (
+    <a className={styles.wikiLink} href={link.url} target="_blank" rel="noreferrer noopener">
+      {link.label} <span aria-hidden="true">↗</span>
+    </a>
+  )
+}
+
 function ModDetail({ mod, onToggle, busy }: { mod: ModFile; onToggle: () => void; busy: boolean }) {
   const meta = mod.meta
   const broken = isUnreadable(mod)
@@ -487,6 +498,8 @@ function ModDetail({ mod, onToggle, busy }: { mod: ModFile; onToggle: () => void
         {meta ? (<><dt>适用版本</dt><dd>{displayGameVersions(meta, 4)}</dd></>) : null}
         <dt>状态</dt>
         <dd>{mod.enabled ? '已启用' : '已禁用'}</dd>
+        <dt>MC 百科</dt>
+        <dd><WikiLink mod={mod} /></dd>
       </dl>
 
       {meta?.dependencies?.length ? (

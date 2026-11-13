@@ -335,8 +335,11 @@ describe('host renders with plugins toggled (SSR)', () => {
     const registry = freshRegistry()
     installWebFeatures(registry)
     const home = ssr(registry, createElement(AppRoutes), '/')
-    expect(home).toContain('返回原生游戏档案')
-    expect(home).toContain('href="/"')
+    // The root route is the Ellan dashboard; the archive page keeps its own path.
+    expect(home).toContain('ellan__main')
+    expect(home).toContain('实例列表')
+    const archive = ssr(registry, createElement(AppRoutes), '/archive')
+    expect(archive).toContain('返回原生游戏档案')
     expect(home).not.toContain('rh-deck')
   })
 
@@ -346,10 +349,10 @@ describe('host renders with plugins toggled (SSR)', () => {
     await registry.disable('motion.archive-core')
     await registry.disable('motion.dust')
 
-    const html = ssr(registry, createElement(AppRoutes), '/')
+    const html = ssr(registry, createElement(AppRoutes), '/archive')
 
     expect(html).toContain('返回原生游戏档案')
-    expect(html).toContain('href="/"')
+    expect(html).toContain('href="/archive"')
     expect(html).not.toContain('rh-core')
     expect(html).not.toContain('rh-dust')
   })
@@ -376,7 +379,7 @@ describe('host renders with plugins toggled (SSR)', () => {
     expect(disabled).toContain('PLUGIN DISABLED')
     expect(disabled).toContain('view.versions')
 
-    const archive = ssr(registry, createElement(AppRoutes), '/')
+    const archive = ssr(registry, createElement(AppRoutes), '/archive')
     expect(archive).toContain('返回原生游戏档案')
   })
 

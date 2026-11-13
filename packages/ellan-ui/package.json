@@ -1,0 +1,25 @@
+{
+  "name": "@rhine/ellan-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Original Ellan renderer and Rhine runtime adapter; no recreated UI components",
+  "license": "MIT",
+  "scripts": {
+    "build:original": "node scripts/build-original.mjs",
+    "build": "node scripts/build-original.mjs && node scripts/assemble.mjs",
+    "build:diagnostics": "node scripts/build-diagnostics.mjs",
+    "build:game-data": "node scripts/build-game-data.mjs"
+  },
+  "exports": {
+    "./projections": "./src/compat/projections.ts",
+    "./defaults": "./src/node/original-defaults.ts",
+    "./node-runtime": "./src/node/runtime.ts",
+    "./plugin": "./src/plugin.ts",
+    "./diagnostics": "./src/node/diagnostics.ts",
+    "./game-data": "./src/node/game-data.ts"
+  },
+  "dependencies": {
+    "@rhine/plugin-api": "workspace:*"
+  }
+}

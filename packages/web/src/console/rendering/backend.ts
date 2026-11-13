@@ -17,6 +17,8 @@ export interface ArchiveBackend{
  configure(quality:RenderQuality,superPerformance:boolean):void
  resizeShadow(light:THREE.DirectionalLight,size:number):void
  resize(host:HTMLElement,quality:RenderQuality,superPerformance:boolean):{width:number;height:number;ratio:number;limited:boolean}
+ inspectMaterial?(material:THREE.Material):Record<string,unknown>
+ captureTransmission?():Promise<{width:number;height:number;data:string;flipY:boolean}>
  prepareMaterials():void
  prepareVariant(signal:AbortSignal,superPerformance:boolean):Promise<void>
  clearPreparedOutput(signal:AbortSignal):Promise<void>

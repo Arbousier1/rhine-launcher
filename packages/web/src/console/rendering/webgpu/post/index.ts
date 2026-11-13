@@ -5,6 +5,7 @@ import { AO_KERNEL_SIZES, type AOKernelSize } from './kernels';
 import { createBokehMaterial, createBlurMaterial, createDepthMaterials, createMultiplyMaterial, createPostUniforms, createSSAOMaterial } from './nodes';
 import { PostResources, resizeTarget } from './resources';
 import { createOwnedSMAA } from './smaa';
+import {ArchiveTransmissionPass} from './transmission';
 import { abortablePost, saveMaterialSides, throwIfPostAborted, withPostRendererState, withSolidOverride, type PostRendererState } from './state';
 
 export type { AOKernelSize } from './kernels';
@@ -77,6 +78,7 @@ class OwnedArchivePostPipeline implements ArchivePostPipeline {
   private readonly uniforms;
   private readonly targets;
   private readonly quad;
+  private readonly transmissionPass:ArchiveTransmissionPass;
   private readonly depthMaterials;
   private readonly normalTexture;
   private readonly hardwareDepth;
@@ -95,7 +97,10 @@ class OwnedArchivePostPipeline implements ArchivePostPipeline {
   constructor(private readonly renderer: WebGPURenderer, private readonly scene: Scene, private readonly camera: Camera, private readonly owner: PostResources) {
     this.uniforms = createPostUniforms(owner);
     this.targets = {
-      beauty: owner.target('ArchivePost.beauty', { depth: true }),
+      // Legacy transmission re-renders opaque color into at least 4x MSAA.
+      // Native transmission reuses beauty, so its source must retain that coverage quality.
+      beauty: owner.target('ArchivePost.beauty', { depth: true, samples:4 }),
+      transmission:owner.target('ArchivePost.transmission',{depth:true,samples:4}),
       normal: owner.target('ArchivePost.normal', { depth: true, nearest: true, count: 2, sampledDepth: true }),
       ao: owner.target('ArchivePost.ao'),
       blur: owner.target('ArchivePost.blur'),
@@ -105,6 +110,7 @@ class OwnedArchivePostPipeline implements ArchivePostPipeline {
     };
     this.targets.normal.textures[1].name = 'ArchivePost.sharedPackedDepth';
     this.quad = owner.quad();
+    this.transmissionPass=new ArchiveTransmissionPass(owner);
     this.depthMaterials = createDepthMaterials(owner);
     this.normalTexture = owner.own(texture(this.targets.normal.texture, uv()));
     this.hardwareDepth = owner.own(texture(this.targets.normal.depthTexture!, uv()));
@@ -164,7 +170,7 @@ class OwnedArchivePostPipeline implements ArchivePostPipeline {
     }
     if (quality.depthOfField !== undefined) this.settings.bokehEnabled = quality.depthOfField > 0;
     if (quality.antialias !== undefined) this.settings.smaaEnabled = quality.antialias === 'smaa';
-    for (const target of [this.targets.beauty, this.targets.bokeh, this.targets.packedDepth, this.targets.preparation]) resizeTarget(target, w, h);
+    for (const target of [this.targets.beauty, this.targets.transmission, this.targets.bokeh, this.targets.packedDepth, this.targets.preparation]) resizeTarget(target, w, h);
     const aoWidth = Math.max(1, Math.floor(w * scale)), aoHeight = Math.max(1, Math.floor(h * scale));
     for (const target of [this.targets.normal, this.targets.ao, this.targets.blur]) resizeTarget(target, aoWidth, aoHeight);
     this.uniforms.resolution.value.set(aoWidth, aoHeight);
@@ -222,11 +228,8 @@ class OwnedArchivePostPipeline implements ArchivePostPipeline {
 
   private drawBeauty(state: PostRendererState): void {
     const renderer = this.renderer;
-    renderer.setRenderTarget(this.targets.beauty);
-    renderer.setRenderObjectFunction(state.renderObject);
-    renderer.setClearColor(state.clearColor, state.clearAlpha);
-    renderer.autoClear = true;
-    renderer.render(this.scene, this.camera);
+    renderer.setClearColor(state.clearColor,state.clearAlpha);
+    this.transmissionPass.render(renderer,this.scene,this.camera,this.targets.beauty,this.targets.transmission);
     // The first native scene render may have converted the camera projection from GL to GPU z convention.
     const camera = this.camera as PerspectiveCamera;
     this.uniforms.projection.value.copy(camera.projectionMatrix);

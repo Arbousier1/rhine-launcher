@@ -303,13 +303,14 @@ export default function SettingsPage() {
         </Row>
       </Panel>
 
-      <Panel caption="MICROSOFT AUTHENTICATION" title="微软应用注册">
-        <p>使用为本启动器注册的 Microsoft 公共客户端应用 ID。启动器不会冒用其他项目的应用身份；设备码授权须由你在微软页面完成。</p>
-        <label className="rh-caption" htmlFor="microsoft-client-id">CLIENT ID</label>
-        <Input id="microsoft-client-id" value={draft.microsoftClientId??''} onChange={event=>update('microsoftClientId',event.target.value.trim())} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+      <Panel caption="MICROSOFT AUTHENTICATION" title="微软登录">
+        <p>本启动器已内置自己的 Microsoft 公共客户端应用 ID，无需重复填写。但设备码可用不等于应用已通过 Minecraft API 审核；令牌兑换被拒绝时，应检查应用接入权限，而不是重复购买游戏。下方可填写你获准使用的已审核应用 ID。</p>
+        <p><a href="https://aka.ms/mce-reviewappid" target="_blank" rel="noreferrer">发布方申请 Minecraft API 接入审核</a></p>
+        <label className="rh-caption" htmlFor="microsoft-client-id">CLIENT ID（可选，留空即用内置应用）</label>
+        <Input id="microsoft-client-id" value={draft.microsoftClientId??''} onChange={event=>update('microsoftClientId',event.target.value.trim())} placeholder="留空使用内置应用" />
         <label className="rh-caption" htmlFor="microsoft-authority">AUTHORITY</label>
         <Input id="microsoft-authority" value={draft.microsoftAuthority??''} onChange={event=>update('microsoftAuthority',event.target.value.trim())} placeholder="https://login.microsoftonline.com/consumers" />
-        <p><a href="https://learn.microsoft.com/entra/identity-platform/quickstart-register-app" target="_blank" rel="noreferrer">微软应用注册说明</a> · 启用公共客户端与个人 Microsoft 账号支持。</p>
+        <p><a href="https://learn.microsoft.com/entra/identity-platform/quickstart-register-app" target="_blank" rel="noreferrer">自行注册应用</a> · 需启用公共客户端与个人 Microsoft 账号支持。</p>
       </Panel>
 
       {/* ---------------- mirrors ---------------- */}

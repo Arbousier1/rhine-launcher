@@ -7,9 +7,16 @@
  */
 import type { Account, DeviceCodeFlow } from '../types.ts'
 import { expandUuid } from './uuid.ts'
+import { BUILTIN_MICROSOFT_APP } from './builtin-app.ts'
 
-/** Compatibility export only. Rhine has no bundled OAuth app registration. Configure an owned/authorized client ID explicitly. */
-export const MICROSOFT_CLIENT_ID = ''
+/**
+ * Compatibility re-export of the app identity this build ships with.
+ *
+ * Kept so older call sites keep resolving. New code should resolve through
+ * `microsoftConfiguration()` instead, so an explicit request, environment
+ * variable or saved setting still takes precedence over the built-in value.
+ */
+export const MICROSOFT_CLIENT_ID = BUILTIN_MICROSOFT_APP.clientId
 
 /** OAuth scopes required for Xbox Live sign-in and token refresh. */
 export const MICROSOFT_SCOPE = 'XboxLive.signin offline_access'
@@ -177,7 +184,7 @@ export function xstsErrorHint(xerr: number | undefined): string {
     case 2148916238:
       return '该账号是受家庭组管理的未成年人账号，请先加入家庭组'
     default:
-      return 'Xbox Live 授权失败，请确认该账号已购买 Minecraft'
+      return 'Xbox Live 授权失败，请重新授权或检查 Xbox 档案状态；此阶段不能判断游戏是否已购买'
   }
 }
 
@@ -213,8 +220,8 @@ export function minecraftLoginPayload(userHash: string, xstsToken: string): Reco
 
 /** User hash of an Xbox Live/XSTS response, when present. */
 export function userHash(body: XboxAuthBody | undefined): string | undefined {
-  const hash = body?.DisplayClaims?.xui?.[0]?.uhs?.trim()
-  return hash ? hash : undefined
+  const hash = body?.DisplayClaims?.xui?.[0]?.uhs
+  return typeof hash === 'string' ? hash.trim() || undefined : undefined
 }
 
 /** Inputs for {@link buildMicrosoftAccount}. */

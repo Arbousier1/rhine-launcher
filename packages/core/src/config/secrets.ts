@@ -28,8 +28,13 @@ export function envValue(name: string): string | undefined {
  *
  * Exposed so the UI and diagnostics can explain *why* a field is locked:
  * an environment-provided secret cannot be edited from the settings page.
+ *
+ * `builtin` means the build itself carries an identity the publisher owns and
+ * registered for this launcher — the shipping model HMCL uses, where the OAuth
+ * app id is baked into the release manifest. It is the last resort, so an
+ * explicit request, environment variable or saved setting always wins.
  */
-export type SecretOrigin = 'env' | 'settings' | 'none'
+export type SecretOrigin = 'env' | 'settings' | 'builtin' | 'none'
 
 export interface ResolvedSecret {
   value: string | undefined
@@ -62,7 +67,23 @@ export function resolveCurseforgeApiKey(settingsValue?: string | null): Resolved
   return resolveSecret(SECRET_ENV.curseforgeApiKey, settingsValue)
 }
 
-/** Effective Microsoft application (client) ID. */
-export function resolveMicrosoftClientId(settingsValue?: string | null): ResolvedSecret {
-  return resolveSecret(SECRET_ENV.microsoftClientId, settingsValue)
+/**
+ * Effective Microsoft application (client) ID.
+ *
+ * `RHINE_MICROSOFT_CLIENT_ID=off` suppresses the *built-in* identity so a
+ * distributor can ship a launcher with no registration of its own. It must not
+ * discard a value the user explicitly saved or the caller passed in — those are
+ * the operator's own choice, and dropping them would make the setting appear
+ * broken. `off` is a control value, never a usable id, so it is never returned.
+ */
+export function resolveMicrosoftClientId(settingsValue?: string | null, builtin?: string): ResolvedSecret {
+  const optedOut = envValue(SECRET_ENV.microsoftClientId)?.toLowerCase() === 'off'
+  const explicit = optedOut
+    ? resolveSecret('RHINE_UNSET_MICROSOFT_CLIENT_ID', settingsValue)
+    : resolveSecret(SECRET_ENV.microsoftClientId, settingsValue)
+  if (explicit.value) return explicit
+  // A built-in identity is the publisher's own registration, never a borrowed
+  // third-party app. Any explicit value always wins over it.
+  if (builtin) return { value: builtin, origin: 'builtin' }
+  return explicit
 }

@@ -26,6 +26,7 @@ class RecordingRenderer {
   toneMappingExposure = 1.2;
   outputColorSpace = SRGBColorSpace;
   xr = { enabled: true };
+  opaque=true;transparent=true;
   autoClear = false;
   autoClearColor = false;
   autoClearDepth = false;
@@ -65,8 +66,10 @@ class RecordingRenderer {
   getScissorTest() { return this.scissorTest; }
   setScissorTest(value: boolean) { this.scissorTest = value; }
   clear() { this.trace.push({ stage: 'clear', target: this.target, autoClear: this.autoClear, clear: [...this.color.toArray(), this.alpha] }); }
+  copyTextureToTexture(_source:unknown,destination:Texture){this.trace.push({stage:destination.name==='ArchivePost.copyOpaque'?'ArchivePost.copyOpaque':destination.name==='ArchivePost.transmission'?'ArchivePost.captureBack':'ArchivePost.captureOpaque',target:this.target,autoClear:this.autoClear})}
+  copyFramebufferToTexture(_texture:Texture){this.trace.push({stage:'ArchivePost.captureOpaque',target:this.target,autoClear:this.autoClear})}
   render(object: any, camera: Camera) {
-    const stage = object.isScene ? (object.overrideMaterial?.name || 'beauty') : object.material.name;
+    const stage = object.isScene ? (object.overrideMaterial?.name || (!this.opaque?(this.target?.texture.name==='ArchivePost.transmission'?'ArchivePost.backCapture':'ArchivePost.forward'):'beauty')) : object.material.name;
     const visible: string[] = [];
     if (object.isScene) object.traverseVisible((child: any) => { if (child.material) visible.push(child.name); });
     this.trace.push({ stage, target: this.target, autoClear: this.autoClear, visible });
@@ -76,12 +79,14 @@ class RecordingRenderer {
       object.traverseVisible((child: any) => {
         if (!child.material) return;
         const source = Array.isArray(child.material) ? child.material[0] : child.material;
+        const isTransparent=source.transparent||source.transmission>0||source.transmissionNode||source.backdropNode;
+        if(isTransparent?!this.transparent:!this.opaque)return;
         const draw = (passId: string | null) => {
           if (this.renderObjectHook) this.renderObjectHook(child, object, camera, child.geometry, source, null, null, null, passId);
           else this.renderObject(child, object, camera, child.geometry, source, null, null, null, passId);
         };
         // Deliberately mimic r183's non-exception-safe source double-pass side mutation.
-        if (source.transparent && source.side === DoubleSide) {
+        if (source.transmission>0 && source.side === DoubleSide) {
           source.side = BackSide; draw('backSide'); source.side = FrontSide; draw(null); source.side = DoubleSide;
         } else draw(null);
       });
@@ -138,7 +143,7 @@ describe('archive post pass sequencing and quality', () => {
     const before = savePostRendererState(f.renderer as any);
     try {
       f.pipeline.render();
-      expect(f.renderer.trace.map(call => call.stage)).toEqual(['beauty', 'clear', 'ArchivePost.clearNormalPacked', 'ArchivePost.normalPacked', 'ArchivePost.ssao32', 'ArchivePost.blur25', 'ArchivePost.multiplyAO', 'ArchivePost.bokeh41', 'RenderPipeline']);
+      expect(f.renderer.trace.map(call => call.stage)).toEqual(['beauty', 'ArchivePost.captureBack', 'clear', 'ArchivePost.copyOpaque', 'ArchivePost.backCapture', 'ArchivePost.captureOpaque', 'ArchivePost.forward', 'clear', 'ArchivePost.clearNormalPacked', 'ArchivePost.normalPacked', 'ArchivePost.ssao32', 'ArchivePost.blur25', 'ArchivePost.multiplyAO', 'ArchivePost.bokeh41', 'RenderPipeline']);
       const normal = f.renderer.trace.find(call => call.stage === 'ArchivePost.normalPacked')!;
       expect(normal.autoClear).toBe(false);
       expect(normal.visible).toEqual(['book']);
@@ -174,11 +179,11 @@ describe('archive post pass sequencing and quality', () => {
     try {
       f.pipeline.resize(80, 40, { aoSamples: 0, depthOfField: 100, antialias: 'off' });
       f.pipeline.render();
-      expect(f.renderer.trace.map(call => call.stage)).toEqual(['beauty', 'clear', 'ArchivePost.packedDepth', 'ArchivePost.bokeh41', 'RenderPipeline']);
+      expect(f.renderer.trace.map(call => call.stage)).toEqual(['beauty', 'ArchivePost.captureBack', 'clear', 'ArchivePost.copyOpaque', 'ArchivePost.backCapture', 'ArchivePost.captureOpaque', 'ArchivePost.forward', 'clear', 'ArchivePost.packedDepth', 'ArchivePost.bokeh41', 'RenderPipeline']);
       f.renderer.trace.length = 0;
       f.pipeline.resize(80, 40, { aoSamples: 0, depthOfField: 0 });
       f.pipeline.render();
-      expect(f.renderer.trace.map(call => call.stage)).toEqual(['beauty', 'RenderPipeline']);
+      expect(f.renderer.trace.map(call => call.stage)).toEqual(['beauty', 'ArchivePost.captureBack', 'clear', 'ArchivePost.copyOpaque', 'ArchivePost.backCapture', 'ArchivePost.captureOpaque', 'ArchivePost.forward', 'RenderPipeline']);
       expect(f.internals.outputTexture.value).toBe(f.internals.targets.beauty.texture);
     } finally { f.pipeline.dispose(); }
   });
@@ -196,11 +201,11 @@ describe('archive post pass sequencing and quality', () => {
     } finally { f.pipeline.dispose(); }
   });
 
-  it('owns only samples0 HalfFloat post targets; normal and both packed depth inputs stay nearest', () => {
+  it('keeps 4x optical capture and samples0 HalfFloat effect targets; normal and both packed depth inputs stay nearest', () => {
     const f = fixture();
     try {
       for (const target of Object.values(f.internals.targets) as RenderTarget[]) {
-        expect(target.samples).toBe(0);
+        expect(target.samples).toBe(target===f.internals.targets.beauty||target===f.internals.targets.transmission?4:0);
         expect(target.textures.every(t => t.type === HalfFloatType)).toBe(true);
       }
       expect(f.internals.targets.normal.textures).toHaveLength(2);
@@ -233,7 +238,7 @@ describe('archive post pass sequencing and quality', () => {
 });
 
 describe('archive post failures, cancellation, SMAA and resource ownership', () => {
-  it.each(['ArchivePost.clearNormalPacked', 'ArchivePost.normalPacked', 'ArchivePost.ssao32', 'ArchivePost.blur25', 'ArchivePost.multiplyAO', 'ArchivePost.bokeh41', 'RenderPipeline'])('restores all renderer/scene state when %s fails', stage => {
+  it.each(['ArchivePost.copyOpaque', 'ArchivePost.backCapture', 'ArchivePost.forward', 'ArchivePost.clearNormalPacked', 'ArchivePost.normalPacked', 'ArchivePost.ssao32', 'ArchivePost.blur25', 'ArchivePost.multiplyAO', 'ArchivePost.bokeh41', 'RenderPipeline'])('restores all renderer/scene state when %s fails', stage => {
     const f = fixture();
     const before = savePostRendererState(f.renderer as any), background = f.scene.background, backgroundNode = f.scene.backgroundNode;
     const originalOverride = new NodeMaterial(); f.scene.overrideMaterial = originalOverride;

@@ -1,0 +1,3 @@
+# task-23: approved layout write scopes
+
+Write ONLY packages/ellan-ui/src/plugins/layout-hybrid.plugin.ts and packages/ellan-ui/src/styles/layout-hybrid.css. Lead owns board task, no board access needed. Implement now. User supersedes strict1:1: PCL2/HMCL/own UI focus. Independent defineFeature ui.layout.hybrid with setup CSS marker and cleanup, execute returns layout metadata. Reduce overpowering profile/news, prioritize existing instance/launch controls, readable main/dialog area at1200x720 and800x400minimum. Use original Me/Home/Setting selectors/classes read from reference. No color/theme/backend/ref/config/deps/activation edits. CSS inline Root style.d.ts exists. No navigation/restart of user UI. Do not wait for unreachable board.

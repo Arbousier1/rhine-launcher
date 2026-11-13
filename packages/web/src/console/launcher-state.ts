@@ -2,6 +2,7 @@ import { FeatureError, type FeatureEnvironment } from '@rhine/plugin-api'
 import type { InstanceConfig, ModFile, TaskSnapshot } from '@rhine/core'
 
 export type LauncherInstanceConfig = Pick<InstanceConfig, 'name' | 'gameVersion'> & Partial<Omit<InstanceConfig, 'name' | 'gameVersion'>>
+export type { LoaderKind } from '@rhine/core'
 export type LauncherInstancePatch = Partial<InstanceConfig>
 export interface LauncherInstance {
   id: string
@@ -40,7 +41,7 @@ export type LauncherMod = ModFile
 export type LauncherTask = TaskSnapshot
 export interface LauncherIssue { code: string; message: string; status?: number }
 export interface LauncherUnavailable { feature: string; status: string; code: string; message: string }
-export type LauncherAction = 'launch' | 'stop' | 'create' | 'update' | 'account' | 'mods' | 'reveal'
+export type LauncherAction = 'launch' | 'stop' | 'create' | 'update' | 'delete' | 'account' | 'mods' | 'reveal'
 export type LauncherConnection = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'disabled'
 export interface LauncherSnapshot {
   status: 'loading' | 'ready' | 'error'

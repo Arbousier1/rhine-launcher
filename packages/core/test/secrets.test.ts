@@ -3,6 +3,7 @@ import {
   SECRET_ENV, envValue, resolveCurseforgeApiKey, resolveMicrosoftClientId, resolveSecret,
 } from '../src/config/secrets.ts'
 import { microsoftConfiguration, normalizeMicrosoftAuthority } from '../src/accounts/config.ts'
+import { BUILTIN_MICROSOFT_APP } from '../src/accounts/builtin-app.ts'
 
 const saved: Record<string, string | undefined> = {}
 function setEnv(name: string, value: string | undefined): void {
@@ -78,9 +79,18 @@ describe('microsoft configuration precedence', () => {
     })
   })
 
-  it('throws a configuration error instead of borrowing another app', () => {
+  it('throws a configuration error when this build ships no app identity', () => {
+    // `off` disables the built-in registration, which is how a downstream
+    // distributor ships Rhine without inheriting this project's OAuth app.
+    setEnv(SECRET_ENV.microsoftClientId, 'off')
+    expect(() => microsoftConfiguration({}, {})).toThrow(/微软登录设置/)
+  })
+
+  it('falls back to the built-in registration instead of borrowing another app', () => {
     setEnv(SECRET_ENV.microsoftClientId, undefined)
-    expect(() => microsoftConfiguration({}, {})).toThrow(/RHINE_MICROSOFT_CLIENT_ID/)
+    expect(microsoftConfiguration({}, {}).clientId).toBe(BUILTIN_MICROSOFT_APP.clientId)
+    // The built-in entry belongs to this project, never to a third party.
+    expect(BUILTIN_MICROSOFT_APP.publisher).toBe('Rhine Launcher')
   })
 
   it('rejects a non-GUID client id', () => {

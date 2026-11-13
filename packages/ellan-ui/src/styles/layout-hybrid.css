@@ -1,0 +1,201 @@
+/* Spatial rhythm only. Color/surfaces live in ui.theme.rhine-life.
+   Every original Vue control, accessible label and handler remains in place. */
+html[data-rhine-layout="hybrid"] {
+  --rh-hints-left: 210px;
+  --rh-hints-top: 9px;
+  --rh-hints-panel-top: 52px;
+}
+
+/* A quiet title strip and compact navigation rail. Native drag regions remain. */
+html[data-rhine-layout="hybrid"] .v-system-bar {
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  flex: 0 0 44px;
+  padding-left: 22px !important;
+}
+html[data-rhine-layout="hybrid"] .v-system-bar::before {
+  content: 'RHINE / LAUNCHER';
+  flex: 0 0 auto;
+  font: 650 10px/1.2 'Segoe UI', sans-serif;
+  letter-spacing: .19em;
+  margin-right: 125px;
+  pointer-events: none;
+}
+html[data-rhine-layout="hybrid"] .system-bar-badge { font-size: 12px; }
+html[data-rhine-layout="hybrid"] .system-btn { width: 38px; }
+html[data-rhine-layout="hybrid"] .app-layout > main { min-width: 0; }
+html[data-rhine-layout="hybrid"] .sidebar {
+  width: 72px; min-width: 72px; padding-block: 12px;
+  border-radius: 0 !important;
+}
+html[data-rhine-layout="hybrid"] .sidebar__divider { height: 1px; margin: 10px 24px; }
+html[data-rhine-layout="hybrid"] .sidebar-back-btn { width: 44px; height: 28px; margin-bottom: 12px; }
+html[data-rhine-layout="hybrid"] .sidebar-item { width: 44px; height: 44px; margin-block: 5px; }
+html[data-rhine-layout="hybrid"] .sidebar-item__content { width: 44px; height: 44px; border-radius: 14px !important; }
+html[data-rhine-layout="hybrid"] .sidebar-item__indicator { width: 3px; left: -14px; }
+html[data-rhine-layout="hybrid"] :is(.sidebar-item--active,.sidebar-item.router-link-active) .sidebar-item__indicator { height: 22px; }
+html[data-rhine-layout="hybrid"] .sidebar-item__icon { font-size: 23px !important; width: 23px !important; height: 23px !important; }
+
+/* Identity is a compact supporting column, not a second full-width page. */
+html[data-rhine-layout="hybrid"] .me-layout > .me-profile-panel.workspace-side-panel {
+  width: 224px !important; min-width: 224px !important; max-width: 224px;
+  flex: 0 0 224px; min-height: 0; padding: 28px 0 8px;
+  overflow-y: auto; scrollbar-width: thin;
+}
+html[data-rhine-layout="hybrid"] .me-profile-panel::before {
+  content: 'PLAYER PROFILE'; margin: 0 18px 16px;
+  font: 600 9px/14px 'Segoe UI', sans-serif; letter-spacing: .18em;
+}
+html[data-rhine-layout="hybrid"] .me-profile-panel .profile-header { padding: 0 14px 14px !important; }
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity {
+  display: grid !important;
+  grid-template-columns: 36px minmax(0,1fr) 24px;
+  gap: 2px 10px !important; padding: 11px 10px !important;
+  border-radius: 12px !important;
+}
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .relative { grid-area: 1 / 1 / 3 / 2; }
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .relative > div {
+  min-width: 36px !important; max-width: 36px !important; min-height: 36px !important; max-height: 36px !important;
+}
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .relative img { width: 36px !important; height: 36px !important; }
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .flex-col { grid-area: 1 / 2 / 3 / 3; gap: 2px; min-width: 0; }
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .flex-col > :first-child { font-size: 14px; font-weight: 650; }
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .flex-col > :last-child { font-size: 11px; }
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > button { grid-area: 1 / 3; width: 24px !important; height: 24px !important; }
+html[data-rhine-layout="hybrid"] .user-account-switcher__identity > i { grid-area: 2 / 3; justify-self: center; font-size: 15px !important; height: 15px !important; }
+html[data-rhine-layout="hybrid"] .me-profile-panel .skin-cape-card { margin: 0 14px 12px !important; border-radius: 14px; }
+html[data-rhine-layout="hybrid"] .skin-cape-card > .cursor-default { position: relative; min-height: 0; height: 234px; }
+html[data-rhine-layout="hybrid"] .skin-cape-card canvas { width: 140px !important; height: 200px !important; }
+html[data-rhine-layout="hybrid"] .skin-cape-card .skin-row { padding: 10px !important; }
+html[data-rhine-layout="hybrid"] .skin-cape-card .skin-row .v-btn { height: 32px; font-size: 12px; }
+html[data-rhine-layout="hybrid"] .friends-section { padding: 12px 16px; }
+html[data-rhine-layout="hybrid"] .friends-section:has(> .text-center) { flex: 0 0 auto; margin-top: auto; }
+html[data-rhine-layout="hybrid"] .friends-section > .text-center { flex-direction: row; gap: 10px; padding-block: 18px !important; text-align: left; opacity: 1; }
+html[data-rhine-layout="hybrid"] .friends-section > .text-center > .v-icon { flex: 0 0 20px; font-size: 20px !important; width: 20px !important; height: 20px !important; }
+html[data-rhine-layout="hybrid"] .friends-section > .text-center > div { font-size: 11px; line-height: 1.65; }
+
+/* One alignment grid; single-instance cards expand instead of leaving a hole. */
+html[data-rhine-layout="hybrid"] .me-layout > .my-stuff-page > .classic-container {
+  display: flex; flex-direction: column; gap: 28px;
+  padding: 28px 30px 36px; max-width: 1120px;
+}
+html[data-rhine-layout="hybrid"] .instances-section { order: 0; min-width: 0; }
+html[data-rhine-layout="hybrid"] .instances-section::before {
+  content: 'YOUR WORKSPACE'; display: block; margin-bottom: 12px;
+  font: 600 10px/14px 'Segoe UI', sans-serif; letter-spacing: .2em;
+}
+html[data-rhine-layout="hybrid"] .my-stuff-page .section-header { margin-bottom: 20px; gap: 12px; }
+html[data-rhine-layout="hybrid"] .my-stuff-page .section-header > .d-flex { min-width: 0; }
+html[data-rhine-layout="hybrid"] .my-stuff-page .section-icon { font-size: 20px; margin-right: 10px; }
+html[data-rhine-layout="hybrid"] .my-stuff-page .section-title { font-size: 23px; line-height: 32px; font-weight: 650; letter-spacing: -.03em; }
+html[data-rhine-layout="hybrid"] .instances-section .v-btn-toggle { height: 32px; border-radius: 8px; padding: 2px; margin-right: 4px !important; }
+html[data-rhine-layout="hybrid"] .instances-section .v-btn-toggle > .v-btn { min-width: 32px; height: 28px; padding-inline: 8px; }
+html[data-rhine-layout="hybrid"] .instances-section > .section-header > .d-flex > .v-btn { height: 32px; padding-inline: 12px; font-size: 12px; font-weight: 550; }
+html[data-rhine-layout="hybrid"] .search-field { max-width: none; width: 100%; margin-bottom: 16px !important; }
+html[data-rhine-layout="hybrid"] .search-field .v-field { font-size: 13px; border-radius: 10px; }
+html[data-rhine-layout="hybrid"] .instances-section > [role="region"]:last-child { margin-bottom: 0 !important; }
+html[data-rhine-layout="hybrid"] .instances-grid { grid-template-columns: repeat(auto-fit,minmax(min(100%,300px),1fr)); gap: 14px; }
+html[data-rhine-layout="hybrid"] .instance-item {
+  min-width: 0; min-height: 102px; padding: 20px; gap: 16px;
+  border-radius: 14px; transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+html[data-rhine-layout="hybrid"] .instance-info { min-width: 0; }
+html[data-rhine-layout="hybrid"] .instance-name { font-size: 17px; line-height: 1.4; font-weight: 650; letter-spacing: -.02em; }
+html[data-rhine-layout="hybrid"] .instance-version { margin-top: 6px; font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+html[data-rhine-layout="hybrid"] .instance-version::before { content: 'Minecraft · '; }
+html[data-rhine-layout="hybrid"] .instance-avatar { border-radius: 12px !important; }
+html[data-rhine-layout="hybrid"] .instance-play-button { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px !important; }
+html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child { min-height: 128px; padding: 24px; gap: 20px; }
+html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-name { font-size: 21px; }
+html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-avatar { width: 56px !important; height: 56px !important; }
+html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-play-button { display: inline-flex; gap: 8px; width: auto; min-width: 108px; height: 48px; flex: 0 0 auto; padding-inline: 18px; border-radius: 12px !important; }
+html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-play-button::after { content: attr(aria-label); position: static; display: inline-flex; align-self: center; align-items: center; flex: 0 0 auto; width: auto; height: auto; inset: auto; transform: none; margin: 0; border: 0; opacity: 1; font-size: 13px; line-height: 20px; font-weight: 550; letter-spacing: .03em; pointer-events: none; }
+
+/* News is an editorial supporting section, not a competing hero. */
+html[data-rhine-layout="hybrid"] .news-section { order: 1; padding-top: 22px; }
+html[data-rhine-layout="hybrid"] .news-section > .section-header { justify-content: flex-start; gap: 8px; margin-bottom: 14px; }
+html[data-rhine-layout="hybrid"] .news-section .section-icon { margin-right: 0; font-size: 18px; }
+html[data-rhine-layout="hybrid"] .news-section .section-title { font-size: 16px; line-height: 24px; font-weight: 600; letter-spacing: 0; }
+html[data-rhine-layout="hybrid"] .news-section > .section-header::after { content: 'UPDATES'; margin-left: auto; font: 600 9px/1.4 'Segoe UI',sans-serif; letter-spacing: .18em; }
+html[data-rhine-layout="hybrid"] .news-carousel-wrapper,
+html[data-rhine-layout="hybrid"] .news-carousel { border-radius: 14px; }
+html[data-rhine-layout="hybrid"] .news-carousel { height: 196px !important; }
+html[data-rhine-layout="hybrid"] .news-image-wrapper { flex: 0 0 34%; width: 34%; }
+html[data-rhine-layout="hybrid"] .news-carousel .news-image { height: 100% !important; }
+html[data-rhine-layout="hybrid"] .news-gradient { width: 44px; }
+html[data-rhine-layout="hybrid"] .news-slide:hover { transform: none; }
+html[data-rhine-layout="hybrid"] .news-info { min-width: 0; padding: 20px 24px 30px; }
+html[data-rhine-layout="hybrid"] .news-meta { margin-bottom: 10px; gap: 8px; font-size: 11px; }
+html[data-rhine-layout="hybrid"] .news-category,
+html[data-rhine-layout="hybrid"] .news-date { font-size: 11px; }
+html[data-rhine-layout="hybrid"] .news-title { font-size: 18px; line-height: 1.5; font-weight: 600; margin-bottom: 8px; letter-spacing: -.02em; }
+html[data-rhine-layout="hybrid"] .news-description { -webkit-line-clamp: 2; line-clamp: 2; font-size: 12px; line-height: 1.6; margin-bottom: 8px; }
+html[data-rhine-layout="hybrid"] .news-read-more { min-height: 24px; height: 26px; padding-inline: 0 !important; font-size: 12px; }
+html[data-rhine-layout="hybrid"] .news-carousel .v-carousel__controls { height: 26px; bottom: 8px; justify-content: flex-start; padding: 0 96px 0 calc(34% + 20px); gap: 0; pointer-events: none; }
+html[data-rhine-layout="hybrid"] .news-carousel .v-carousel__controls__item { width: 24px; height: 24px; margin: 0; pointer-events: auto; }
+html[data-rhine-layout="hybrid"] .news-carousel .v-carousel__controls__item .v-icon { font-size: 7px; width: 7px; height: 7px; }
+html[data-rhine-layout="hybrid"] .news-carousel .v-window__controls { top: auto; bottom: 8px; left: auto; right: 16px; height: 28px; width: auto; padding: 0; gap: 6px; }
+html[data-rhine-layout="hybrid"] .news-carousel .v-window__controls .v-btn { width: 28px; height: 28px; }
+
+/* Existing instance-detail launch controls retain their own behavior. */
+html[data-rhine-layout="hybrid"] .home-page > .header { padding: 26px 28px 20px; }
+html[data-rhine-layout="hybrid"] .header-primary-row { align-items: center; gap: 24px; }
+html[data-rhine-layout="hybrid"] .home-title { font-size: 28px; letter-spacing: -.03em; }
+html[data-rhine-layout="hybrid"] .header-extension { gap: 12px; }
+html[data-rhine-layout="hybrid"] .home-launch-group { flex: 0 0 auto; }
+html[data-rhine-layout="hybrid"] .launch-pill { min-width: 236px; }
+html[data-rhine-layout="hybrid"] .btn-launch { font-size: 17px; font-weight: 650; }
+html[data-rhine-layout="hybrid"] .home-page .footer { padding-inline: 28px; }
+
+@media (max-width: 1100px) {
+  html[data-rhine-layout="hybrid"] .me-layout > .me-profile-panel.workspace-side-panel { width: 204px !important; min-width: 204px !important; max-width: 204px; flex-basis: 204px; }
+  html[data-rhine-layout="hybrid"] .me-layout > .my-stuff-page > .classic-container { padding-inline: 24px; }
+  html[data-rhine-layout="hybrid"] .instances-grid { grid-template-columns: minmax(0,1fr); }
+  html[data-rhine-layout="hybrid"] .my-stuff-page .section-title { font-size: 21px; }
+  html[data-rhine-layout="hybrid"] .news-section .section-title { font-size: 16px; }
+  html[data-rhine-layout="hybrid"] .news-image-wrapper { flex-basis: 30%; width: 30%; }
+  html[data-rhine-layout="hybrid"] .news-carousel .v-carousel__controls { padding-left: calc(30% + 16px); }
+  html[data-rhine-layout="hybrid"] .news-title { font-size: 16px; }
+  html[data-rhine-layout="hybrid"] .news-info { padding: 16px 20px 30px; }
+}
+@media (max-width: 860px) {
+  html[data-rhine-layout="hybrid"] { --rh-hints-left: 112px; }
+  html[data-rhine-layout="hybrid"] .v-system-bar::before { content: 'RHINE'; margin-right: 110px; }
+  html[data-rhine-layout="hybrid"] .me-layout > .me-profile-panel.workspace-side-panel { width: 176px !important; min-width: 176px !important; max-width: 176px; flex-basis: 176px; }
+  html[data-rhine-layout="hybrid"] .me-layout > .my-stuff-page > .classic-container { padding-inline: 18px; }
+  html[data-rhine-layout="hybrid"] .user-account-switcher__identity { grid-template-columns: 30px minmax(0,1fr) 22px; gap: 2px 6px !important; padding: 8px 6px !important; }
+  html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .relative > div { min-width: 30px !important; max-width: 30px !important; min-height: 30px !important; max-height: 30px !important; }
+  html[data-rhine-layout="hybrid"] .user-account-switcher__identity > .relative img { width: 30px !important; height: 30px !important; }
+  html[data-rhine-layout="hybrid"] .me-profile-panel .profile-header { padding-inline: 10px !important; }
+  html[data-rhine-layout="hybrid"] .me-profile-panel .skin-cape-card { margin-inline: 10px !important; }
+  html[data-rhine-layout="hybrid"] .instances-section > .section-header { flex-wrap: wrap; row-gap: 10px; }
+  html[data-rhine-layout="hybrid"] .my-stuff-page .section-title { font-size: 20px; }
+  html[data-rhine-layout="hybrid"] .news-section .section-title { font-size: 15px; }
+  html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child { min-height: 104px; padding: 18px; gap: 14px; }
+  html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-name { font-size: 18px; }
+  html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-avatar { width: 44px !important; height: 44px !important; }
+  html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-play-button { width: 44px; min-width: 44px; height: 44px; flex-basis: 44px; padding-inline: 0; border-radius: 12px !important; }
+  html[data-rhine-layout="hybrid"] .instances-grid > .instance-item:only-child .instance-play-button::after { display: none; }
+  html[data-rhine-layout="hybrid"] .news-image-wrapper { display: none; }
+  html[data-rhine-layout="hybrid"] .news-carousel .v-carousel__controls { padding-left: 16px; }
+}
+@media (max-height: 570px) {
+  html[data-rhine-layout="hybrid"] .me-layout > .me-profile-panel.workspace-side-panel { padding-top: 14px; }
+  html[data-rhine-layout="hybrid"] .me-profile-panel::before { margin-bottom: 8px; }
+  html[data-rhine-layout="hybrid"] .me-layout > .my-stuff-page > .classic-container { padding: 14px 18px 24px; gap: 18px; }
+  html[data-rhine-layout="hybrid"] .instances-section::before { margin-bottom: 8px; }
+  html[data-rhine-layout="hybrid"] .my-stuff-page .section-header { margin-bottom: 12px; }
+  html[data-rhine-layout="hybrid"] .skin-cape-card > .cursor-default { height: 122px; }
+  html[data-rhine-layout="hybrid"] .skin-cape-card canvas { width: 70px !important; height: 100px !important; }
+  html[data-rhine-layout="hybrid"] .skin-cape-card .skin-row { padding: 6px !important; }
+  html[data-rhine-layout="hybrid"] .skin-cape-card .skin-row .v-btn { height: 28px; }
+  html[data-rhine-layout="hybrid"] .friends-section { padding-block: 0; }
+  html[data-rhine-layout="hybrid"] .friends-section > .text-center { padding-block: 10px !important; }
+  html[data-rhine-layout="hybrid"] .news-section { padding-top: 16px; }
+  html[data-rhine-layout="hybrid"] .news-carousel { height: 156px !important; }
+  html[data-rhine-layout="hybrid"] .news-description { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-rhine-layout="hybrid"] :is(.instance-item,.news-slide,.sidebar-item__content,.sidebar-item__indicator) { transition: none !important; transform: none !important; }
+}

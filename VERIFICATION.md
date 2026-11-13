@@ -116,6 +116,19 @@ classpath 同时含继承的原版 `1.20.1.jar` 与 fabric 运行库，说明 `i
 
 ## 8. 微软登录的边界
 
-设备码流程本身已实现并有单元测试（含自有 client app 校验、authority 限制、令牌刷新）。
-端到端登录必须由使用者提供自己注册的 public client application；启动器不内置、不借用他方应用身份，
-因此这一项标记为 🟡 而不是「已完全跑通」。
+设备码流程已实现并有单元测试（含 client app 校验、authority 限制、令牌刷新）。
+启动器现在**内置本项目自己注册的公共客户端应用**（`packages/core/src/accounts/builtin-app.ts`），
+与 HMCL 用 `hmcl.microsoft.auth.id` 随发行版提供应用 ID 的思路一致，省去手工填写 ID，
+但**不能据此认定默认完整登录可用**。仍然**不借用 Prism / MultiMC 等第三方注册的应用身份**。
+
+已实测（真实微软端点，非 mock）：用内置应用 ID 请求 `devicecode` 返回 **HTTP 200** 并签发
+`user_code`，随后轮询 `token` 返回 `authorization_pending`（AADSTS70016）。这只证明 OAuth
+设备码端点接受该注册，**不证明 Minecraft 令牌兑换、Java 购买状态或 API 审核已通过**。
+新应用还需按照 [Minecraft 官方审核说明](https://minecrafthelp.zendesk.com/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process)
+提交 [API 接入申请](https://aka.ms/mce-reviewappid)，经人工加入允许列表。
+
+用户已购买但报 Minecraft 登录交换失败时，应先检查该步骤 HTTP 状态和应用注册拒绝原因，
+不能要求用户重新购买。本次加入固定错误分类、XSTS 身份一致性校验，以及只读诊断接口
+`GET /api/accounts/microsoft/diagnostics`，仅保留阶段、状态和已知错误码，不保存原始响应或令牌。
+
+`RHINE_MICROSOFT_CLIENT_ID` 可覆盖内置值；设为 `off` 则关闭内置应用（下游重新打包时用）。

@@ -151,7 +151,8 @@ describe('microsoft protocol helpers', () => {
     expect(oauthErrorHint('expired_token')).toContain('过期')
     expect(xstsErrorHint(2148916233)).toContain('Xbox Live')
     expect(xstsErrorHint(2148916238)).toContain('家庭组')
-    expect(xstsErrorHint(12345)).toContain('Minecraft')
+    expect(xstsErrorHint(12345)).toContain('此阶段不能判断')
+    expect(xstsErrorHint(12345)).not.toContain('请确认该账号已购买')
   })
 
   it('builds the xbox -> minecraft payloads', () => {

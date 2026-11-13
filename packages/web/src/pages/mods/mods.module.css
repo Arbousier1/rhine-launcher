@@ -148,3 +148,6 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.wikiLink{color:var(--rhine-accent);text-decoration:none;border-bottom:1px solid transparent;transition:border-color var(--rhine-dur-1) var(--rhine-ease)}
+.wikiLink:hover,.wikiLink:focus-visible{border-bottom-color:var(--rhine-accent)}

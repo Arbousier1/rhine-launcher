@@ -1,4 +1,5 @@
 import { defineFeature, FeatureError } from '@rhine/plugin-api'
+import { realtimeAvailable, websocketUrl } from '../../api/origin.ts'
 import { launcherIssue, launcherState, type LauncherIssue } from '../launcher-state'
 import { instance, object, session, task, text } from './internal/validation'
 
@@ -59,13 +60,13 @@ export default defineFeature<LauncherEventsOptions | undefined, LauncherEventsHa
       timer = undefined
       if (!current()) return
       state.setConnection(retries ? 'reconnecting' : 'connecting', retries ? state.snapshot.connectionError : null)
-      if (typeof WebSocket === 'undefined' || typeof location === 'undefined' || !['http:', 'https:'].includes(location.protocol) || !location.host) {
+      if (!realtimeAvailable()) {
         close()
         state.setConnection('disconnected', launcherIssue(new FeatureError('REALTIME_UNAVAILABLE', '当前环境不支持实时连接，仍可手动刷新 HTTP 快照')))
         return
       }
       let next: WebSocket
-      try { next = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws') }
+      try { next = new WebSocket(websocketUrl()) }
       catch (error) { retry(launcherIssue(error)); return }
       socket = next
       const live = () => current() && socket === next

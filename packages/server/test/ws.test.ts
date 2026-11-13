@@ -193,12 +193,15 @@ describe('WebSocket hub', () => {
 
   it('drops the subscription when the server is disposed', async () => {
     const harness = await start()
+    const baseline = harness.mock.subscribers() // Core-owned state/task observers are not owned by WS.
     const client = await connect(harness.url)
     await client.next()
-    expect(harness.mock.subscribers()).toBe(1)
+    expect(harness.mock.subscribers()).toBe(baseline + 1)
     await harness.dispose()
     open.pop()
     await new Promise<void>((resolve) => harness.server.close(() => resolve()))
+    expect(harness.mock.subscribers()).toBe(baseline)
+    await harness.mock.ctx.features.dispose()
     expect(harness.mock.subscribers()).toBe(0)
     client.close()
   })

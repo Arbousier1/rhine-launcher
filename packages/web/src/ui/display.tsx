@@ -3,7 +3,8 @@
  * archive's signature hairline stat grid.
  */
 import clsx from 'clsx'
-import type { ComponentProps, ReactNode } from 'react'
+import type { ComponentProps, CSSProperties, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 /* ------------------------------------------------------------------ */
@@ -125,52 +126,63 @@ export interface TooltipProps {
   className?: string
   /** Delay before showing, in ms. */
   delay?: number
+  /** Escape clipped scrolling containers by rendering into document.body. */
+  portal?: boolean
 }
 
-export function Tooltip({ content, side = 'top', children, className, delay = 220 }: TooltipProps) {
+export function Tooltip({ content, side = 'top', children, className, delay = 220, portal = false }: TooltipProps) {
   const [open, setOpen] = useState(false)
+  const [position, setPosition] = useState<CSSProperties>()
+  const anchor = useRef<HTMLSpanElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const id = useId().replace(/:/g, '')
-
+  const id = 'tip-' + useId().replace(/:/g, '')
   const show = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
-    timer.current = setTimeout(() => setOpen(true), delay)
-  }, [delay])
-
+    timer.current = setTimeout(() => {
+      if (portal && anchor.current) {
+        const rect = anchor.current.getBoundingClientRect()
+        const positions = {
+          right: { left: rect.right + 8, top: rect.top + rect.height / 2, transform: 'translateY(-50%)' },
+          left: { left: rect.left - 8, top: rect.top + rect.height / 2, transform: 'translate(-100%, -50%)' },
+          top: { left: rect.left + rect.width / 2, top: rect.top - 8, transform: 'translate(-50%, -100%)' },
+          bottom: { left: rect.left + rect.width / 2, top: rect.bottom + 8, transform: 'translateX(-50%)' },
+        }
+        setPosition({ position: 'fixed', right: 'auto', bottom: 'auto', zIndex: 800, ...positions[side] })
+      }
+      setOpen(true)
+    }, delay)
+  }, [delay, portal, side])
   const hide = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
     timer.current = undefined
     setOpen(false)
   }, [])
-
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current)
-  }, [])
-
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
   useEffect(() => {
     if (!open) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
-    }
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') hide() }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
-
+    if (portal) {
+      window.addEventListener('scroll', hide, true)
+      window.addEventListener('resize', hide)
+    }
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('scroll', hide, true)
+      window.removeEventListener('resize', hide)
+    }
+  }, [open, portal, hide])
+  const tip = open && content ? (
+    <span role="tooltip" id={id} className={clsx('rh-tooltip', 'rh-tooltip--' + side)} style={portal ? position : undefined}>
+      {content}
+    </span>
+  ) : null
   return (
-    <span
-      className={clsx('rh-tooltip-host', className)}
-      onMouseEnter={show}
-      onMouseLeave={hide}
-      onFocus={show}
-      onBlur={hide}
-      aria-describedby={open ? `tip-${id}` : undefined}
-    >
+    <span ref={anchor} className={clsx('rh-tooltip-host', className)}
+      onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide}
+      aria-describedby={open ? id : undefined}>
       {children}
-      {open && content ? (
-        <span role="tooltip" id={`tip-${id}`} className={clsx('rh-tooltip', `rh-tooltip--${side}`)}>
-          {content}
-        </span>
-      ) : null}
+      {portal && typeof document !== 'undefined' ? createPortal(tip, document.body) : tip}
     </span>
   )
 }

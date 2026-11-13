@@ -62,6 +62,7 @@ export class ArchiveScene {
   private backend!:ArchiveBackend;
   get canvas(){return this.backend.canvas}
   get backendKind(){return this.backend.kind}
+  captureTransmission(){return this.backend.captureTransmission?.()}
   setBackendLossHandler(handler:(reason:string)=>void){this.backend.onLost=handler}
   private presence = 1;
   private presenceTarget = 1;
@@ -1801,6 +1802,8 @@ export class ArchiveScene {
       pipelinePrepared:this.pipelinePrepared,
       pipelinePreparing:Boolean(this.preparingPipeline),
       rendererBackend:this.backend.kind,
+      opticalSettings:{ao:this.ao.enabled,kernelRadius:this.ao.kernelRadius,bokeh:this.bokeh.enabled,focus:this.bokeh.uniforms.focus.value,aperture:this.bokeh.uniforms.aperture.value,maxblur:this.bokeh.uniforms.maxblur.value},
+      materialDebug:new URLSearchParams(location.search).has("material-debug")?this.model.children.map(child=>{const mesh=child as THREE.Mesh,mat=mesh.material as THREE.MeshPhysicalMaterial;return {surface:mesh.userData.surface??"Printed_Canvas",type:mat.type,side:mat.side,transparent:mat.transparent,forceSinglePass:mat.forceSinglePass,depthWrite:mat.depthWrite,roughness:mat.roughness,transmission:mat.transmission,ior:mat.ior,thickness:mat.thickness,opacity:mat.opacity,color:mat.color?.toArray(),q:mesh.userData.appearance?.value,c:mesh.userData.glassClarity?.value,theme:mesh.userData.themeAmount?.value,nodeQ:mat.userData.archiveNodeControls?.quality?.value,nodeC:mat.userData.archiveNodeControls?.clarity?.value,compiled:this.backend.inspectMaterial?.(mat)}}):undefined,
       drawCalls:this.backend.metrics.drawCalls,
       renderedFrames: this.renderedFrames,
       gpuSubmittedFrames:this.backend.metrics.submittedFrames,

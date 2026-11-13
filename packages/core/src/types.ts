@@ -257,7 +257,11 @@ export interface MarketVersion {
   downloads: number
   publishedAt: string
   file: { url: string; fileName: string; size: number; hashes?: Record<string, string> }
-  dependencies: { projectId?: string; versionId?: string; type: 'required' | 'optional' | 'incompatible' }[]
+  /**
+   * Dependency relations. `embedded` marks code bundled inside the artifact
+   * (CurseForge relationType 1/6), so it must never trigger a separate install.
+   */
+  dependencies: { projectId?: string; versionId?: string; type: 'required' | 'optional' | 'incompatible' | 'embedded' }[]
 }
 
 export interface MarketSearchResult {
@@ -328,7 +332,7 @@ export interface Settings {
   showSnapshots: boolean
   /** Download source: official or mirror (BMCLAPI style). */
   downloadSource: 'official' | 'mirror'
-  theme: 'archive' | 'midnight' | 'light'
+  theme: 'ellan' | 'archive' | 'midnight' | 'light'
   /** OAuth application registered for this launcher; no unrelated project's identity is borrowed. */
   microsoftClientId?: string
   microsoftAuthority?: string

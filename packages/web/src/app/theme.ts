@@ -14,19 +14,19 @@ import { useAppStore } from './data.ts'
 import { createTranslator, normalizeLocale } from './i18n.ts'
 import type { Locale, Translator } from './i18n.ts'
 
-export type ThemeName = 'archive' | 'midnight' | 'light'
+export type ThemeName = 'archive' | 'midnight' | 'light' | 'ellan'
 
-export const THEMES: ThemeName[] = ['archive', 'midnight', 'light']
+export const THEMES: ThemeName[] = ['ellan', 'archive', 'midnight', 'light']
 
 const THEME_STORAGE_KEY = 'rhine.theme'
 
 /** Write the theme attribute, the color-scheme meta and the local cache. */
 export function applyTheme(theme: string | undefined | null): ThemeName {
-  const value: ThemeName = theme === 'midnight' || theme === 'light' ? theme : 'archive'
+  const value: ThemeName = theme === 'midnight' || theme === 'light' || theme === 'ellan' ? theme : 'ellan'
   if (typeof document !== 'undefined') {
     document.documentElement.dataset.theme = value
     const meta = document.querySelector('meta[name="color-scheme"]')
-    if (meta) meta.setAttribute('content', value === 'midnight' ? 'dark' : 'light')
+    if (meta) meta.setAttribute('content', value === 'midnight' || value === 'ellan' ? 'dark' : 'light')
     try {
       localStorage.setItem(THEME_STORAGE_KEY, value)
     } catch {

@@ -56,6 +56,7 @@ export function createInstance(config: LauncherInstanceConfig): Promise<Launcher
 export function updateInstance(id: string, patch: LauncherInstancePatch): Promise<LauncherInstance> { return invoke('launcher.instance.update', { id, patch }, 'update', id) }
 export function addOfflineAccount(name: string): Promise<LauncherAccount> { return invoke('launcher.account.offline', { name }, 'account') }
 export function readMods(id: string): Promise<LauncherMod[]> { return invoke('launcher.mods.list', { id }, 'mods', id) }
+export function deleteInstance(id: string, deleteFiles = true): Promise<void> { return invoke('launcher.instance.delete', { id, deleteFiles }, 'delete', id) }
 export function revealPath(path: string): Promise<void> { return invoke('launcher.system.reveal', { path }, 'reveal') }
 export async function disposeLauncher(): Promise<void> {
   const current = host

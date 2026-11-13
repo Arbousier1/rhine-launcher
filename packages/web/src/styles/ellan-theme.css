@@ -1,0 +1,163 @@
+/**
+ * 艾尔岚主题（Ellan Launcher）—— 只替换语义 token，不改任何组件。
+ *
+ * 色值取自其源码 composables/theme.ts 的默认品牌调色板：
+ * deep pine green / parchment cream / gold；圆角与模糊取自 surfaceTokens.ts。
+ */
+[data-theme='ellan'] {
+  --rhine-paper: #0b1a16;
+  --rhine-ink: #e9e5d3;
+  --rhine-panel: #10261f;
+  --rhine-field: #16332a;
+  --rhine-line: #24473b;
+  --rhine-line-soft: #1b3a30;
+  --rhine-muted: #7f9a90;
+  --rhine-muted-strong: #a8bcb4;
+
+  --rhine-accent: #d9a441;
+  --rhine-accent-bright: #f0cf7a;
+  --rhine-accent-soft: rgba(217, 164, 65, 0.16);
+  --rhine-on-accent: #1b1405;
+
+  --rhine-danger: #e4685c;
+  --rhine-danger-soft: rgba(228, 104, 92, 0.16);
+  --rhine-ok: #6bbf8a;
+  --rhine-ok-soft: rgba(107, 191, 138, 0.16);
+  --rhine-warn: #f0a23b;
+  --rhine-warn-soft: rgba(240, 162, 59, 0.16);
+  --rhine-overlay: rgba(4, 12, 10, 0.66);
+
+  --rhine-radius: 16px;
+  --rhine-nav-w: 76px;
+  --rhine-topbar-h: 40px;
+  --rhine-gutter: 22px;
+  --rhine-shadow-dialog: 0 12px 40px -8px rgba(0, 0, 0, 0.35);
+
+  color-scheme: dark;
+}
+
+/* 侧栏改为窄图标栏：文字标签在窄栏上隐藏，改用 title 提示。 */
+[data-theme='ellan'] .rh-nav__label,
+[data-theme='ellan'] .rh-nav__caption,
+[data-theme='ellan'] .rh-nav__grouplabel,
+[data-theme='ellan'] .rh-nav__brandtext { display: none; }
+
+[data-theme='ellan'] .rh-nav {
+  align-items: center;
+  padding: 10px 0;
+  background: color-mix(in srgb, var(--rhine-panel) 70%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+[data-theme='ellan'] .rh-shell { background: var(--rhine-paper); }
+
+[data-theme='ellan'] .rh-nav__brand {
+  height: auto;
+  padding: 0 0 12px;
+  border-bottom: 0;
+  justify-content: center;
+}
+
+[data-theme='ellan'] .rh-nav__scroll { padding: 4px 0; width: 100%; }
+[data-theme='ellan'] .rh-nav__group { padding: 0 8px 8px; gap: 4px; }
+
+[data-theme='ellan'] .rh-nav__item {
+  width: 48px; height: 48px;
+  margin: 0 auto;
+  justify-content: center;
+  border-left: 0;
+  border-radius: 10px;
+  color: var(--rhine-muted-strong);
+}
+
+[data-theme='ellan'] .rh-nav__item:hover {
+  background: rgba(217, 164, 65, 0.12);
+  color: var(--rhine-ink);
+}
+
+[data-theme='ellan'] .rh-nav__item.is-active {
+  background: rgba(217, 164, 65, 0.18);
+  color: var(--rhine-accent);
+}
+
+[data-theme='ellan'] .rh-nav__icon { width: 22px; height: 22px; opacity: 1; }
+
+[data-theme='ellan'] .rh-topbar {
+  background: transparent;
+  border-bottom: 0;
+  backdrop-filter: blur(6px);
+}
+
+[data-theme='ellan'] .rh-content__inner { padding-top: 4px; }
+
+/* Narrow rail: hide labels, centre icons, keep the column fixed. */
+[data-theme='ellan'] .rh-nav {
+  width: var(--rhine-nav-w) !important;
+  min-width: var(--rhine-nav-w) !important;
+  max-width: var(--rhine-nav-w) !important;
+  overflow: hidden !important;
+}
+[data-theme='ellan'] .rh-nav__item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  width: 48px !important;
+  min-width: 48px !important;
+  white-space: nowrap !important;
+  writing-mode: horizontal-tb !important;
+}
+[data-theme='ellan'] .rh-nav__item > span,
+[data-theme='ellan'] .rh-nav__item > .rh-nav__label { display: none !important; }
+[data-theme='ellan'] .rh-nav__icon { flex: none !important; }
+[data-theme='ellan'] .rh-nav__scroll { overflow-x: hidden; }
+
+/* The rail component renders .ellan-nav (not .rh-nav); style the real classes. */
+.ellan-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: var(--rhine-nav-w);
+  flex: none;
+  min-height: 0;
+  padding: 10px 0;
+  border-right: 1px solid var(--rhine-line-soft);
+  background: rgba(16, 38, 31, 0.72);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+}
+.ellan-nav__avatar {
+  width: 38px; height: 38px; margin-bottom: 6px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(140deg, #2f6b57, #17362c);
+  color: var(--rhine-ink);
+  font-weight: 700; font-size: 14px;
+  flex: none;
+}
+.ellan-nav__item {
+  position: relative;
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  color: var(--rhine-muted-strong);
+  text-decoration: none;
+  flex: none;
+  transition: background-color 160ms, color 160ms;
+}
+.ellan-nav__item:hover { background: rgba(217, 164, 65, 0.12); color: var(--rhine-ink); }
+.ellan-nav__item.is-active { background: rgba(217, 164, 65, 0.18); color: var(--rhine-accent); }
+.ellan-nav__item svg { width: 22px; height: 22px; flex: none; }
+.ellan-nav__tooltip-host { width: 48px; height: 48px; flex: none; }
+.ellan-nav__divider { width: 28px; height: 1px; background: var(--rhine-line); margin: 6px 0; flex: none; }
+.ellan-nav__scroll { display: flex; flex-direction: column; align-items: center; gap: 4px; overflow-y: auto; overflow-x: hidden; width: 100%; }
+.ellan-nav__spacer { flex: 1; }
+
+/* Session block from the slot plugin must not print text in a 76px rail. */
+.ellan-nav .rh-nav__statusline,
+.ellan-nav .rh-nav__meta,
+.ellan-nav [class*='statusline'] { display: none !important; }
+.ellan-nav > * { max-width: 100%; }

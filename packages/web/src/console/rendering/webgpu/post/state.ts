@@ -11,6 +11,7 @@ export function savePostRendererState(renderer: WebGPURenderer) {
     renderObject: renderer.getRenderObjectFunction(),
     clearColor: renderer.getClearColor(Object.assign(new Color(), { a: 1 })),
     clearAlpha: renderer.getClearAlpha(),
+    opaque:renderer.opaque,transparent:renderer.transparent,
     autoClear: renderer.autoClear,
     autoClearColor: renderer.autoClearColor,
     autoClearDepth: renderer.autoClearDepth,
@@ -31,6 +32,7 @@ export function restorePostRendererState(renderer: WebGPURenderer, state: PostRe
   renderer.toneMappingExposure = state.exposure;
   renderer.outputColorSpace = state.outputColorSpace;
   renderer.xr.enabled = state.xrEnabled;
+  renderer.opaque=state.opaque;renderer.transparent=state.transparent;
   renderer.autoClear = state.autoClear;
   renderer.autoClearColor = state.autoClearColor;
   renderer.autoClearDepth = state.autoClearDepth;

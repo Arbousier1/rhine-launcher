@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import { originalProcessEnvironment, observeOriginalProcess } from '../ellan/launch.ts'
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, unlink } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -41,7 +42,14 @@ export async function spawnGame(plan:PreparedFeatureLaunch,env:FeatureEnvironmen
  append('# '+session.command.map(quoteArg).join(' '))
  env.signal.throwIfAborted()
  let child:ReturnType<typeof spawn>
- try{child=spawn(plan.command[0],plan.command.slice(1),{cwd:plan.cwd,detached:plan.request.detach!==false,stdio:['ignore','pipe','pipe'],windowsHide:true,shell:false,env:{...process.env}})}catch(error){output.end();state.sessions.delete(id);throw error}
+ try{child=spawn(plan.command[0],plan.command.slice(1),{cwd:plan.cwd,detached:plan.request.detach!==false,stdio:['ignore','pipe','pipe'],windowsHide:true,shell:false,env:{...process.env,...originalProcessEnvironment(plan.request)}})}catch(error){output.end();state.sessions.delete(id);throw error}
+ try { observeOriginalProcess(plan,child,session,env) } catch (error) {
+  child.once('error',()=>{})
+  await terminateProcess(child)
+  output.destroy()
+  state.sessions.delete(id);state.logs.delete(id)
+  throw error
+ }
  let resolveClosed!:()=>void
  const closed=new Promise<void>(resolve=>{resolveClosed=resolve})
  let spawnError:Error|undefined

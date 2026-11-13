@@ -43,21 +43,43 @@ export async function dispatchFeature(runtime:FeatureRuntime,request:Request):Pr
   catch(error){if(error instanceof FeatureError)throw error;throw new FeatureError('VALIDATION_ERROR','请求参数无效：'+(error instanceof Error?error.message:String(error)),400)}
   if(metadata.background){
     const title=typeof metadata.background.title==='function'?metadata.background.title(input):metadata.background.title
-    const taskId=runtime.call<string>('task.submit',{kind:metadata.background.kind,title,body:(task:any)=>runtime.call(match.plugin.id,input,{task,signal:task.signal})})
+    let result: unknown, failure: unknown
+    const taskId=runtime.call<string>('task.submit',{kind:metadata.background.kind,title,body:async(task:any)=>{
+      try { result = await runtime.call(match.plugin.id,input,{task,signal:task.signal}) }
+      catch(error) { failure = error; throw error }
+    }})
+    if (metadata.background.waitForResult) {
+      const task = await runtime.call<Promise<{status:string}>>('task.wait',{id:taskId},{signal:request.signal})
+      if (task.status !== 'succeeded') throw failure ?? new FeatureError('TASK_FAILED','原操作任务未完成',409)
+      const encoded = metadata.encode ? metadata.encode(result,input) : result ?? {ok:true}
+      return encoded instanceof Response ? encoded : Response.json(encoded,{status:metadata.status??200})
+    }
     return Response.json({taskId,title},{status:202})
   }
   const output=await runtime.call(match.plugin.id,input,{signal:request.signal})
   if(output===undefined&&request.method==='GET')throw new FeatureError('NOT_FOUND',metadata.notFoundMessage??'没有找到请求的资源',404)
-  return Response.json(metadata.encode?metadata.encode(output,input):output??{ok:true},{status:metadata.status??200})
+ const encoded = metadata.encode ? metadata.encode(output, input) : output ?? { ok: true }
+ if (encoded instanceof Response) return encoded
+ return Response.json(encoded, { status: metadata.status ?? 200 })
 }
 
 export function errorResponse(error:unknown):Response {
-  const err=error as {code?:string;name?:string;status?:number;statusCode?:number;message?:string}
+  const err=(error&&typeof error==='object'?error:{}) as {code?:string;name?:string;status?:number;statusCode?:number;message?:string;exception?:unknown}
   const status=err.status??err.statusCode??(/NotFound/i.test(err.name??'')||/不存在|not found/i.test(err.message??'')?404:/必须|参数|非法|不允许|未填写|不能为空/.test(err.message??'')?400:500)
   const retry=error as {retryAfterMs?:number;intervalMs?:number}
   const hint:Record<string,number>={}
   for(const key of ['retryAfterMs','intervalMs'] as const)if(Number.isFinite(retry?.[key])&&retry[key]!>=0)hint[key]=retry[key]!
-  return Response.json({code:err.code??(status===404?'NOT_FOUND':status===400?'VALIDATION_ERROR':'INTERNAL_ERROR'),message:status<500||err.message?err.message??'请求失败':'内部错误',...hint},{status:Math.min(599,Math.max(400,status))})
+  const original:Record<string,unknown>={}
+  if(err.exception&&typeof err.exception==='object'){
+    const exception:Record<string,string|number|boolean>={}
+    for(const key of ['type','reason','authority','version','minecraft','forge','fabricLoader','javaPath','operationId']){
+      const value=Reflect.get(err.exception,key)
+      if(typeof value==='string')exception[key]=value.slice(0,4096)
+      else if(typeof value==='number'&&Number.isFinite(value)||typeof value==='boolean')exception[key]=value
+    }
+    original.name=err.name??'RuntimeException';original.exception=exception;original.origin='runtime-service'
+  }
+  return Response.json({code:err.code??(status===404?'NOT_FOUND':status===400?'VALIDATION_ERROR':'INTERNAL_ERROR'),message:status<500||err.message?err.message??'请求失败':'内部错误',...hint,...original},{status:Math.min(599,Math.max(400,status))})
 }
 
 /** A local launcher must not accept browser requests from arbitrary websites. */

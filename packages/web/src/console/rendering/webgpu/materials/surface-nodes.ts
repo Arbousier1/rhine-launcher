@@ -3,7 +3,7 @@ import type { Node } from "three/webgpu";
 import {
   abs, attribute, cameraProjectionMatrix, color, dot, float, fract, length,
   int, log2, max, min, mix, modelViewMatrix, normalize, positionGeometry, positionView,
-  pow, reference, screenCoordinate, screenSize, smoothstep, varying, vec2, vec3, vec4,
+  pow, reference, materialReference, screenCoordinate, screenSize, smoothstep, varying, vec2, vec3, vec4,
 } from "three/tsl";
 import type { ArchiveNodeControlState } from "./controls.ts";
 
@@ -86,3 +86,16 @@ export function createArchiveSurfaceNodes(controls: ArchiveNodeControlState) {
   const reveal = archiveRevealNode(clarity, height);
   return { quality, clarity, theme, subdued, height, projectedAxis, reveal };
 }
+
+/** Shared shader graph. Each uniform resolves against the material being drawn. */
+function materialSurfaceGraph(instanced:boolean){
+ const quality=float(materialReference('userData.archiveNodeControls.quality.value','float'));
+ const clarity=float(materialReference('userData.archiveNodeControls.clarity.value','float'));
+ const theme=instanced?varying(float(attribute('archiveTheme','float')),'vRhineTheme'):float(materialReference('userData.archiveNodeControls.theme.value','float'));
+ const subdued=float(materialReference('userData.archiveNodeControls.subdued.value','float'));
+ const height=archiveHeightNode(),projectedAxis=archiveProjectedAxisNode(),reveal=archiveRevealNode(clarity,height);
+ return {quality,clarity,theme,subdued,height,projectedAxis,reveal,
+  roughness:archiveRoughnessNode(quality,reveal),coverage:quality.greaterThan(archiveCoverageNode())};
+}
+const materialGraphs=new Map<boolean,ReturnType<typeof materialSurfaceGraph>>();
+export function createArchiveMaterialSurfaceNodes(instanced:boolean){let nodes=materialGraphs.get(instanced);if(!nodes){nodes=materialSurfaceGraph(instanced);materialGraphs.set(instanced,nodes)}return nodes}

@@ -14,11 +14,11 @@ import type { ArchiveNodeControls, ArchiveNodeControlState } from "./controls.ts
 import {
   archiveCoverageNode, archiveDarkSurfaceNode, archiveFrostTintNode,
   archiveInternalAlphaNode, archivePrintedThemeNode, archiveRoughnessNode,
-  createArchiveSurfaceNodes,
+  createArchiveMaterialSurfaceNodes,
 } from "./surface-nodes.ts";
 import { ArchiveFrostedLightingModel } from "./frosted-lighting.ts";
 
-type SurfaceNodes = ReturnType<typeof createArchiveSurfaceNodes>;
+type SurfaceNodes = ReturnType<typeof createArchiveMaterialSurfaceNodes>;
 const physicalNodeDefaults = new MeshPhysicalNodeMaterial();
 const basicNodeDefaults = new MeshBasicNodeMaterial();
 
@@ -27,9 +27,8 @@ export const ARCHIVE_INTERNAL_OPTICAL_ORDERS: Readonly<Record<string, number>> =
   Optical_Bridge_Glass: 26, Optical_Glass_Edge: 28,
 });
 
-// r183 reuses NodeBuilderState, including bound ReferenceNodes, for identical keys.
-// Hook-only nodes are not direct material properties, so include their identities
-// explicitly. Numeric handle values must never enter this key (they animate).
+// r183 safely shares material-resolved graphs; every draw reads its own controls.
+// Stable graph identities, never card identity or animation values, enter the key.
 function controlCacheKey(nodes: SurfaceNodes) {
   return [nodes.quality.uuid, nodes.clarity.uuid, nodes.theme.uuid, nodes.subdued.uuid].join(",");
 }
@@ -78,6 +77,9 @@ export class ArchivePhysicalNodeMaterial extends MeshPhysicalNodeMaterial {
   static override get type() { return "ArchivePhysicalNodeMaterial"; }
   private archive!: ArchiveNodeControlState;
   private archiveNodes!: SurfaceNodes;
+  // Hook-only controls must be visible to r183 NodeMaterialObserver, even when
+  // geometry/scalars are static. This shared marker adds no shader operations.
+  archiveControlNode!:Node<"float">;
   private archiveInternal = false;
 
   constructor(source?: Material, controls?: ArchiveNodeControls) {
@@ -91,10 +93,11 @@ export class ArchivePhysicalNodeMaterial extends MeshPhysicalNodeMaterial {
 
   private configure(controls: ArchiveNodeControls) {
     this.archive = storeArchiveControls(this, controls);
-    this.archiveNodes = createArchiveSurfaceNodes(this.archive);
+    this.archiveNodes = createArchiveMaterialSurfaceNodes(this.archive.instanced);
+    this.archiveControlNode=this.archiveNodes.quality;
     const selectedFrost = controls.surface === "Frosted_Polymer" && !controls.instanced;
-    this.roughnessNode = selectedFrost ? archiveRoughnessNode(this.archiveNodes.quality, this.archiveNodes.reveal) : null;
-    this.maskNode = selectiveGeometry(this.archive) ? this.archiveNodes.quality.greaterThan(archiveCoverageNode()) : null;
+    this.roughnessNode = selectedFrost ? this.archiveNodes.roughness : null;
+    this.maskNode = selectiveGeometry(this.archive) ? this.archiveNodes.coverage : null;
     this.archiveInternal = Boolean(ARCHIVE_INTERNAL_OPTICAL_ORDERS[controls.surface] || this.userData.opticalOrder);
     if (this.archiveInternal) {
       // Keep these thin blended surfaces in WebGPU's opaque transmission capture.
@@ -129,15 +132,16 @@ export class ArchivePhysicalNodeMaterial extends MeshPhysicalNodeMaterial {
   }
 
   override setupLightingModel() {
-    if (this.archive.surface === "Frosted_Polymer" && !this.archive.instanced) {
-      return new ArchiveFrostedLightingModel(this, this.archiveNodes.quality, this.archiveNodes.projectedAxis);
+    if (this.useTransmission) {
+      const selectedFrost=this.archive.surface === "Frosted_Polymer" && !this.archive.instanced;
+      return new ArchiveFrostedLightingModel(this,selectedFrost?this.archiveNodes.quality:float(0),this.archiveNodes.projectedAxis);
     }
     return super.setupLightingModel();
   }
 
   override customProgramCacheKey() {
     const { surface, instanced, hasLow } = this.archive;
-    return super.customProgramCacheKey() + controlCacheKey(this.archiveNodes) + JSON.stringify(["archive-r183-v1", surface, instanced, hasLow, this.archiveInternal]);
+    return super.customProgramCacheKey() + controlCacheKey(this.archiveNodes) + JSON.stringify(["archive-r183-v2", surface, instanced, hasLow, this.archiveInternal, this.side, this.forceSinglePass]);
   }
 
   override copy(source: Material): this {
@@ -155,6 +159,9 @@ export class ArchiveBasicNodeMaterial extends MeshBasicNodeMaterial {
   static override get type() { return "ArchiveBasicNodeMaterial"; }
   private archive!: ArchiveNodeControlState;
   private archiveNodes!: SurfaceNodes;
+  // Hook-only controls must be visible to r183 NodeMaterialObserver, even when
+  // geometry/scalars are static. This shared marker adds no shader operations.
+  archiveControlNode!:Node<"float">;
 
   constructor(source?: Material, controls?: ArchiveNodeControls) {
     super();
@@ -167,8 +174,9 @@ export class ArchiveBasicNodeMaterial extends MeshBasicNodeMaterial {
 
   private configure(controls: ArchiveNodeControls) {
     this.archive = storeArchiveControls(this, controls);
-    this.archiveNodes = createArchiveSurfaceNodes(this.archive);
-    this.maskNode = selectiveGeometry(this.archive) ? this.archiveNodes.quality.greaterThan(archiveCoverageNode()) : null;
+    this.archiveNodes = createArchiveMaterialSurfaceNodes(this.archive.instanced);
+    this.archiveControlNode=this.archiveNodes.quality;
+    this.maskNode = selectiveGeometry(this.archive) ? this.archiveNodes.coverage : null;
     this.needsUpdate = true;
   }
 

@@ -2016,6 +2016,7 @@ Object.assign(window, {
     archive: () => setMode("archive"),
     detail: () => openFile(),
     select: (i: number) => select(i),
+    captureTransmission:reviewParams.has("material-debug")?()=>scene?.captureTransmission():undefined,
     stats: () => ({
       ...scene?.getStats(),
       threeState,

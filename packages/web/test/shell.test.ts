@@ -24,9 +24,9 @@ describe('i18n', () => {
 
   it('translates and interpolates', () => {
     const t = createTranslator('zh-CN')
-    expect(t('archive.title')).toBe('档案库')
-    expect(t('archive.count', { count: 7 })).toBe('共 7 份档案')
-    expect(createTranslator('en-US')('archive.count', { count: 2 })).toBe('2 archives')
+    expect(t('archive.title')).toBe('实例列表')
+    expect(t('archive.count', { count: 7 })).toBe('共 7 个实例')
+    expect(createTranslator('en-US')('archive.count', { count: 2 })).toBe('2 instances')
   })
 
   it('returns the key when a translation is missing', () => {
@@ -66,7 +66,8 @@ describe('i18n', () => {
 
   it('does not fall back to English when zh-CN is requested', () => {
     const t = createTranslator('zh-CN')
-    expect(t('nav.archive')).toBe('档案库')
+    // Wording follows the upstream launcher locale verbatim.
+    expect(t('nav.archive')).toBe('实例列表')
   })
 })
 

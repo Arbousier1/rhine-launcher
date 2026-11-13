@@ -1,0 +1,47 @@
+/* Owned by ui.hints.advanced. Palette and title-strip placement are optional:
+   the popover remains usable when either theme or layout is disabled. */
+.rh-advanced-trigger, .rh-advanced-panel { box-sizing: border-box; font-family: 'MiSans','Segoe UI','Microsoft YaHei',sans-serif; -webkit-app-region: no-drag; }
+.rh-advanced-trigger {
+  position: fixed; top: var(--rh-hints-top,4px); left: var(--rh-hints-left,110px); z-index: 20000;
+  display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 10px;
+  border: 1px solid rgba(var(--rl-line-rgb,170,165,154),.38); border-radius: 7px;
+  color: var(--rl-muted,#77756d); background: rgba(var(--rl-panel-rgb,237,235,228),.8);
+  font-size: 11px; font-weight: 500; cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+.rh-advanced-trigger::before {
+  content: ''; width: 12px; height: 12px; flex-shrink: 0; border: 1px solid currentColor; border-radius: 3px;
+  background: linear-gradient(currentColor,currentColor) 3px 3px/4px 1px no-repeat, linear-gradient(currentColor,currentColor) 3px 6px/4px 1px no-repeat;
+}
+.rh-advanced-trigger:hover, .rh-advanced-trigger[aria-expanded='true'] { color: var(--rl-ink,#080a08); border-color: var(--rl-accent,#9b7247); background: var(--rl-panel,#edebe4); }
+.rh-advanced-panel {
+  position: fixed; top: var(--rh-hints-panel-top,38px); left: min(var(--rh-hints-left,110px),calc(100vw - 404px)); z-index: 20001;
+  width: min(388px,calc(100vw - 24px)); max-height: calc(100vh - var(--rh-hints-panel-top,38px) - 12px); overflow: auto;
+  padding: 22px; border: 1px solid rgba(var(--rl-line-rgb,170,165,154),.5); border-radius: 16px;
+  background: var(--rl-panel,#edebe4); color: var(--rl-ink,#080a08);
+  box-shadow: 0 18px 54px -16px rgba(var(--rl-shadow-rgb,8,10,8),.26), 0 3px 10px -4px rgba(var(--rl-shadow-rgb,8,10,8),.12);
+  animation: rh-environment-in 160ms ease-out;
+}
+.rh-advanced-panel[hidden] { display: none; }
+.rh-advanced-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.rh-advanced-eyebrow { display: block; margin-bottom: 7px; font: 600 9px/1.4 'Segoe UI',sans-serif; letter-spacing: .2em; color: var(--rl-muted,#77756d); }
+.rh-advanced-panel h3 { margin: 0; font-size: 19px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
+.rh-advanced-close { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border: 1px solid rgba(var(--rl-line-rgb,170,165,154),.35); border-radius: 8px; color: var(--rl-muted,#77756d); background: transparent; font: 21px/1 sans-serif; cursor: pointer; }
+.rh-advanced-close:hover { color: var(--rl-ink,#080a08); background: var(--rl-field,#e7e3d9); }
+.rh-advanced-panel dl { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; margin: 0; }
+.rh-advanced-stat { min-width: 0; padding: 12px 13px; background: rgba(var(--rl-field-rgb,231,227,217),.65); border: 1px solid rgba(var(--rl-line-rgb,170,165,154),.18); border-radius: 10px; }
+.rh-advanced-stat--wide { grid-column: 1 / -1; }
+.rh-advanced-panel dt { margin-bottom: 5px; font-size: 11px; line-height: 1.5; color: var(--rl-muted,#77756d); }
+.rh-advanced-panel dd { margin: 0; font-size: 12px; font-weight: 550; line-height: 1.55; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rh-advanced-stat--path dd { font: 11px/1.65 'Cascadia Code','Consolas',monospace; }
+.rh-advanced-note { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid rgba(var(--rl-line-rgb,170,165,154),.3); color: var(--rl-muted,#77756d); font-size: 11px; line-height: 1.7; }
+.rh-advanced-status { margin: 0; font-size: 12px; line-height: 1.7; color: var(--rl-muted,#77756d); }
+.rh-advanced-trigger:focus-visible, .rh-advanced-close:focus-visible { outline: 2px solid var(--rl-accent,#9b7247); outline-offset: 3px; }
+@keyframes rh-environment-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-height:570px) {
+  .rh-advanced-panel { padding: 16px; }
+  .rh-advanced-header { margin-bottom: 12px; }
+  .rh-advanced-stat { padding: 9px 11px; }
+  .rh-advanced-note { margin-top: 12px; padding-top: 10px; }
+}
+@media (prefers-reduced-motion:reduce) { .rh-advanced-panel { animation: none; } .rh-advanced-trigger { transition: none; } }

@@ -27,7 +27,8 @@ describe('pages render without a backend', () => {
   it('hands archive navigation back to the native terminal without resurrecting the rejected tray', () => {
     const html = render(createElement(ArchivePage), '/')
     expect(html).toContain('游戏档案终端')
-    expect(html).toContain('href="/"')
+    // The archive page lives at /archive now that / is the Ellan dashboard.
+    expect(html).toContain('href="/archive"')
     expect(html).toContain('返回原生游戏档案')
     expect(html).not.toContain('rh-deck')
     expect(html).not.toContain('rh-archive-grid')

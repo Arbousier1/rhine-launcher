@@ -92,33 +92,65 @@ pnpm start          # 另开：pnpm dev:web
 - 返回 `AADSTS700016` → 这个 App ID 在该租户下不存在（拼错，或用了别人的 ID）。
 - `invalid_client` → authority 与账户类型不匹配（个人号用 `consumers`）。
 
-## 5. 为什么本仓库不内置 App ID
+## 5. 本仓库内置自有 App ID，但 Minecraft API 接入必须另行审核
 
-`packages/core/src/accounts/microsoft.ts` 里 `MICROSOFT_CLIENT_ID = ''` 是**有意为之**：
-借用第三方（Prism / MultiMC 等）注册的应用身份违反 Microsoft 服务条款，且对方可随时吊销，
-导致所有下游用户同时登不上。`README.md`「与 HMCL 的差异」与 `VERIFICATION.md`「明确边界」
-都记录了这条边界。因此正确做法是**每个使用者注册自己的 App ID**，这也是本文存在的原因。
+> **纠正此前验收结论**：设备码返回 200 只证明 Microsoft OAuth 接受了应用注册，不能证明
+> `login_with_xbox`、Java 版档案或购买检查已成功。内置 Rhine 应用目前没有在仓库中可验证的
+> Minecraft API 审核通过证据，因此不能承诺“开箱完整登录可用”。
+>
+> [Minecraft 官方说明](https://minecrafthelp.zendesk.com/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process)
+> 要求新应用通过 [审核表单](https://aka.ms/mce-reviewappid) 人工加入 API 允许列表。
+> 这是发布方的应用接入要求，与玩家是否已经买了游戏是两个问题。
+>
+> 已购但登录失败时，先查看 `GET /api/accounts/microsoft/diagnostics` 的安全阶段与状态；
+> `MINECRAFT_APP_NOT_APPROVED` 代表明确的应用注册拒绝；未知 403 不等于未购买，也不能
+> 仅凭状态认定未审核。完成审核或配置你获准使用的已审核应用后，仍需用户完成真实授权。
+
+早期版本把 `MICROSOFT_CLIENT_ID` 留空，要求每位使用者自己注册。现在保留本项目的自有
+注册作为默认 ID，省去手工填写，但是否能兑换 Minecraft 令牌必须另行验收。分层方式如下：
+
+| 环节 | HMCL | Rhine |
+| --- | --- | --- |
+| 应用 ID 来源 | 构建期 `MICROSOFT_AUTH_ID` → jar manifest `hmcl.microsoft.auth.id` | 源码常量 `packages/core/src/accounts/builtin-app.ts` |
+| 运行时读取 | `System.getProperty(...)`，否则 manifest 属性 | 环境变量 → 设置 → 内置常量 |
+| 开发者覆盖 | `-Dhmcl.microsoft.auth.id=<App ID>` | `RHINE_MICROSOFT_CLIENT_ID=<App ID>` |
+| 未注册时 | 显示「非官方构建」提示并禁用登录 | `RHINE_MICROSOFT_CLIENT_ID=off` 关闭内置值 |
+
+内置的是**本项目自己注册**的应用（`Rhine Launcher`，公共客户端），不是 Prism / MultiMC
+等其他项目的应用——第 4 节那条「不借用他方身份」的边界依然成立。
+
+App ID 不是密钥：它出现在每一个授权 URL 里，任何人都能看到，所以公共客户端流程不配
+client secret。真正不能外发的是 client secret，本启动器从未使用也不保存它。
+
+解析优先级（`packages/core/src/config/secrets.ts`）：
+
+```
+显式请求参数 → RHINE_MICROSOFT_CLIENT_ID → launcher.json 的 microsoftClientId → 内置应用
+```
+
+`RHINE_MICROSOFT_CLIENT_ID=off` 只关闭**内置**值，不会丢弃你已保存或显式传入的 ID，
+便于下游发行方在不继承本项目注册的前提下重新打包。
 
 ## 6. 与 PCL2 / HMCL 的实际做法对照
 
-两个上游项目都没有把凭据硬编码进源码，读取方式如下（已核对真实源码）：
+下表为核对真实源码后的上游取值方式：
 
 | 项目 | 取值方式 | 出处 |
 | --- | --- | --- |
 | PCL2 | `Environment.GetEnvironmentVariable("PCL_MS_CLIENT_ID")` | [ModSecret.vb](https://github.com/Meloong-Git/PCL/blob/main/Plain%20Craft%20Launcher%202/Modules/ModSecret.vb) 第 10 行 |
-| HMCL | `System.getProperty("hmcl.curseforge.apikey", JarUtils.getAttribute("hmcl.curseforge.apikey", ""))` | `CurseForgeRemoteAddonRepository.java` |
+| HMCL（微软登录） | `System.getProperty("hmcl.microsoft.auth.id", JarUtils.getAttribute("hmcl.microsoft.auth.id", ""))` | `OAuthServer.java` 第 207-210 行；构建期注入见 `HMCL/build.gradle.kts` |
+| HMCL（CurseForge） | `System.getProperty("hmcl.curseforge.apikey", JarUtils.getAttribute("hmcl.curseforge.apikey", ""))` | `CurseForgeRemoteAddonRepository.java` 第 47 行 |
 
-本仓库采用同样的思路并统一成环境变量，优先级为
-**请求参数 → 环境变量 → `launcher.json`**：
+本仓库采用同样的分层思路并统一成环境变量：
 
 ```
-RHINE_MICROSOFT_CLIENT_ID   应用（客户端）ID
+RHINE_MICROSOFT_CLIENT_ID   应用（客户端）ID；设为 off 关闭内置应用
 RHINE_MICROSOFT_AUTHORITY   consumers / organizations / 租户 GUID
-RHINE_CURSEFORGE_API_KEY    CurseForge API Key
+RHINE_CURSEFORGE_API_KEY    CurseForge API Key（可选，见 CURSEFORGE.md）
 ```
 
 PCL2 第 10 行的 `If(...)` 是典型 bug 温床：环境变量缺失时会得到空串而不是默认值。
-本仓库用 `packages/core/src/config/secrets.ts` 显式区分「未设置 / 空 / 有值」，
+本仓库用 `packages/core/src/config/secrets.ts` 显式区分「未设置 / 空 / 有值 / off」，
 空环境变量不会覆盖已保存的配置（有测试覆盖）。
 
 ## 7. 本次实测记录（2026-10-31）

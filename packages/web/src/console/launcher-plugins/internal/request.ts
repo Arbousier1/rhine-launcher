@@ -1,3 +1,4 @@
+import { apiUrl } from '@/api/client'
 import { FeatureError, type FeatureEnvironment } from '@rhine/plugin-api'
 import { launcherState, type LauncherAction, type LauncherState } from '../../launcher-state'
 
@@ -19,7 +20,7 @@ export async function request(env: FeatureEnvironment, path: string, init: Reque
   return abortable((async () => {
     const headers = new Headers(init.headers)
     if (init.body !== undefined) headers.set('content-type', 'application/json')
-    const response = await fetch(path, { ...init, headers, signal: env.signal })
+    const response = await fetch(apiUrl(path), { ...init, headers, signal: env.signal })
     const raw = await response.text()
     assertActive(env.signal)
     let body: unknown

@@ -73,12 +73,12 @@ afterEach(async () => {
 })
 
 describe('native launcher feature catalog and HTTP snapshots', () => {
-  it('discovers nine single-capability native FeatureRuntime plugins without starting I/O on import', async () => {
+  it('discovers ten single-capability native FeatureRuntime plugins without starting I/O on import', async () => {
     const { FeatureRuntime } = await import('@rhine/plugin-api')
     const runtime = bridge.getLauncherRuntime()
     await runtime.settled()
     expect(runtime).toBeInstanceOf(FeatureRuntime)
-    expect(runtime.definitions().map(plugin => plugin.id).sort()).toEqual(['launcher.account.offline', 'launcher.bootstrap', 'launcher.events.connect', 'launcher.instance.create', 'launcher.instance.update', 'launcher.launch.start', 'launcher.mods.list', 'launcher.session.stop', 'launcher.system.reveal'])
+    expect(runtime.definitions().map(plugin => plugin.id).sort()).toEqual(['launcher.account.offline', 'launcher.bootstrap', 'launcher.events.connect', 'launcher.instance.create', 'launcher.instance.delete', 'launcher.instance.update', 'launcher.launch.start', 'launcher.mods.list', 'launcher.session.stop', 'launcher.system.reveal'])
     for (const plugin of runtime.definitions()) { expect(plugin.capability).toBe(plugin.id); expect(plugin.execute).toBeTypeOf('function'); expect(plugin.depends).toEqual([]) }
     expect(api.calls).toEqual([])
     expect(FixtureSocket.all).toEqual([])

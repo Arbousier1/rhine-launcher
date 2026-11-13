@@ -1,0 +1,137 @@
+/* 艾尔岚（Ellan Launcher）配色与表面参数，取自其 theme.ts / surfaceTokens.ts。
+   deep pine green + parchment cream + gold；圆角 16px，对话框 32px。 */
+.ellan {
+  --el-pine: #0b1a16;
+  --el-pine-2: #10261f;
+  --el-cream: #f7f4e8;
+  --el-primary: #d9a441;
+  --el-accent: #f0cf7a;
+  --el-info: #5fb3a8;
+  --el-ok: #6bbf8a;
+  --el-warn: #f0a23b;
+  --el-danger: #e4685c;
+  --el-card: #10261fcc;
+  --el-sidebar: #0b1a16b3;
+  --el-appbar: #0b1a16ff;
+  --el-on-surface: #e9e5d3;
+  --el-on-muted: #9fb0a9;
+  --el-radius: 16px;
+  --el-radius-sm: 10px;
+  --el-border: 1px solid rgba(233, 229, 211, 0.12);
+  --el-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.35);
+  --el-blur-card: 18px;
+  --el-blur-bar: 6px;
+  font-family: var(--rhine-font);
+  color: var(--el-on-surface);
+  background: var(--el-pine);
+  position: absolute; inset: 0; display: grid;
+  grid-template-columns: 76px 1fr; overflow: hidden;
+}
+.ellan * { box-sizing: border-box; }
+.ellan button { font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; }
+
+/* ── sidebar ─────────────────────────────────────────────── */
+.ellan__side {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 0; background: var(--el-sidebar);
+  backdrop-filter: blur(var(--el-blur-bar));
+  border-right: var(--el-border);
+}
+.ellan__avatar {
+  width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center;
+  background: linear-gradient(140deg, #2f6b57, #17362c); color: var(--el-cream);
+  font-weight: 700; font-size: 15px; margin-bottom: 6px;
+}
+.ellan__nav-item {
+  width: 46px; height: 46px; border-radius: var(--el-radius-sm);
+  display: grid; place-items: center; color: var(--el-on-muted);
+  transition: background 160ms, color 160ms;
+}
+.ellan__nav-item:hover { background: rgba(217, 164, 65, 0.12); color: var(--el-cream); }
+.ellan__nav-item[aria-selected="true"] { background: rgba(217, 164, 65, 0.18); color: var(--el-primary); }
+.ellan__nav-item svg { width: 22px; height: 22px; fill: currentColor; }
+.ellan__divider { width: 28px; height: 1px; background: rgba(233, 229, 211, 0.14); margin: 6px 0; }
+.ellan__instances { display: flex; flex-direction: column; gap: 4px; overflow: auto; padding: 2px; width: 100%; align-items: center; }
+.ellan__instance {
+  width: 48px; height: 48px; border-radius: var(--el-radius-sm); overflow: hidden;
+  display: grid; place-items: center; font-size: 13px; font-weight: 600;
+  background: var(--el-pine-2); color: var(--el-cream); border: var(--el-border);
+}
+.ellan__instance[aria-selected="true"] { outline: 2px solid var(--el-primary); outline-offset: 1px; }
+.ellan__side-spacer { flex: 1; }
+
+/* ── main ────────────────────────────────────────────────── */
+.ellan__main { overflow: auto; padding: 18px 22px 26px; min-width: 0; }
+.ellan__hero { display: flex; flex-direction: row; align-items: flex-end; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.ellan__hero > div { min-width: 0; }
+.ellan__hero h1 { margin: 0; font-size: 26px; letter-spacing: -0.01em; }
+.ellan__hero p { margin: 4px 0 0; font-size: 13px; color: var(--el-on-muted); }
+.ellan__hero .ellan__spacer { flex: 1; }
+
+.ellan__hero .ellan__btn { flex: 0 0 auto; max-width: none; min-width: 150px; white-space: nowrap; writing-mode: horizontal-tb; }
+.ellan__btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 16px;
+  border-radius: var(--el-radius-sm); border: var(--el-border); color: var(--el-cream);
+  transition: background 160ms, border-color 160ms;
+}
+.ellan__btn:hover { border-color: var(--el-primary); }
+.ellan__btn--primary { background: var(--el-primary); color: #1b1405; font-weight: 700; border-color: transparent; }
+.ellan__btn--primary:hover { background: var(--el-accent); }
+.ellan__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* draggable card dashboard, mirroring grid-layout-plus cards */
+.ellan__grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.ellan__card {
+  border-radius: var(--el-radius); border: var(--el-border); box-shadow: var(--el-shadow);
+  background: var(--el-card); backdrop-filter: blur(var(--el-blur-card));
+  padding: 14px 16px; min-height: 120px; display: flex; flex-direction: column; gap: 10px;
+}
+.ellan__card--wide { grid-column: span 2; }
+.ellan__card h2 { margin: 0; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--el-on-muted); font-weight: 600; }
+.ellan__card strong { font-size: 30px; font-weight: 700; line-height: 1.1; }
+.ellan__card small { font-size: 12px; color: var(--el-on-muted); }
+.ellan__row { display: flex; align-items: center; gap: 10px; }
+.ellan__row > span:first-child { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ellan__muted { color: var(--el-on-muted); font-size: 12px; }
+.ellan__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ellan__pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 11px; background: rgba(95, 179, 168, 0.16); color: var(--el-info); }
+.ellan__pill--ok { background: rgba(107, 191, 138, 0.16); color: var(--el-ok); }
+.ellan__pill--warn { background: rgba(240, 162, 59, 0.16); color: var(--el-warn); }
+.ellan__empty { padding: 26px 0; color: var(--el-on-muted); font-size: 13px; text-align: center; }
+.ellan__alert { padding: 9px 12px; border-radius: var(--el-radius-sm); background: rgba(228, 104, 92, 0.16); color: var(--el-danger); font-size: 12px; }
+.ellan__focus { min-height: 100%; display: grid; place-items: center; }
+.ellan__focus .ellan__btn { min-height: 64px; min-width: 260px; justify-content: center; font-size: 18px; }
+
+/* Host resets style bare buttons; these rules must win inside the page. */
+.ellan .ellan__btn--primary,
+.ellan .ellan__btn--primary:not(:disabled) {
+  background: var(--el-primary) !important;
+  color: #1b1405 !important;
+  border-color: transparent !important;
+  font-weight: 700;
+}
+.ellan .ellan__btn--primary:hover:not(:disabled) { background: var(--el-accent) !important; }
+.ellan .ellan__btn { border: var(--el-border); color: var(--el-cream); }
+.ellan .ellan__nav-item { width: 46px; height: 46px; }
+.ellan .ellan__nav-item svg { width: 22px; height: 22px; fill: currentColor; }
+
+.ellan .ellan__input {
+  width: 100%; min-height: 38px; padding: 0 12px; border-radius: var(--el-radius-sm);
+  border: var(--el-border); background: rgba(11, 26, 22, 0.6); color: var(--el-cream);
+  font: inherit;
+}
+.ellan .ellan__input::placeholder { color: var(--el-on-muted); }
+
+/* The shell rail owns navigation; the page is a single content column. */
+.ellan {
+  grid-template-columns: minmax(0, 1fr) !important;
+  position: static !important;
+  inset: auto !important;
+  background: transparent !important;
+  min-height: 100%;
+}
+.ellan__main { padding: 0; overflow: visible; }
+.ellan .ellan__side { display: none !important; }

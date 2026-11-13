@@ -1,4 +1,6 @@
+import {archiveTransmissionTexture} from "../src/console/rendering/webgpu/materials/frosted-lighting";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import NodeMaterialObserver from "three/src/materials/nodes/manager/NodeMaterialObserver.js";
 import * as THREE from "three";
 import { MeshBasicNodeMaterial, MeshPhysicalNodeMaterial, PhysicalLightingModel } from "three/webgpu";
 import type { Node, NodeBuilder } from "three/webgpu";
@@ -17,7 +19,7 @@ import type { ArchiveNodeControls } from "../src/console/rendering/webgpu/materi
 import {
   archiveCoverageNode, archiveDarkSurfaceNode, archiveFrostTintNode, archiveHeightNode,
   archiveInternalAlphaNode, archivePrintedThemeNode, archiveProjectedAxisNode,
-  archiveRevealNode, archiveRoughnessNode, archiveTransmissionLodNode, createArchiveSurfaceNodes,
+  archiveRevealNode, archiveRoughnessNode, archiveTransmissionLodNode, createArchiveSurfaceNodes, createArchiveMaterialSurfaceNodes,
 } from "../src/console/rendering/webgpu/materials/surface-nodes.ts";
 import { completeArchiveControls } from "../src/console/rendering/webgpu/materials/controls.ts";
 import { ArchiveFrostedLightingModel, archiveIBLVolumeRefraction, archiveVolumeAttenuation, archiveVolumeTransmissionRay } from "../src/console/rendering/webgpu/materials/frosted-lighting.ts";
@@ -55,10 +57,10 @@ function evaluate(input: unknown, values: Bindings = new Map(), material?: THREE
     const expanded = expandShader(n);
     const conditional = expanded.nodes.find(child => child.constructor.name === "ConditionalNode");
     if (conditional && evaluate(conditional.condNode, values, material)) return evaluate(conditional.ifNode, values, material);
-    runAssignments(expanded.nodes.filter(child => child.constructor.name !== "ConditionalNode"), values);
+    runAssignments(expanded.nodes.filter(child => child.constructor.name !== "ConditionalNode"), values, material);
     return evaluate(expanded.result, values, material);
   }
-  if (n.isMaterialReferenceNode) return graph(n.material ?? material)[n.property];
+  if (n.isMaterialReferenceNode) return n.property.split(".").reduce((object:any,key:string)=>object[key],n.material??material);
   if (n.object && n.property) return n.object[n.property];
   if (n.isConstNode || n.isUniformNode) {
     if (n.value?.isMatrix4) return Array.from({ length: 4 }, (_, i) => n.value.elements.slice(i * 4, i * 4 + 4));
@@ -176,16 +178,16 @@ function setTarget(input: Graph, value: Value, values: Bindings) {
   }
   values.set(input.uuid, value);
 }
-function runAssignments(nodes: Graph[], values: Bindings) {
+function runAssignments(nodes: Graph[], values: Bindings, material?:THREE.Material) {
   for (const n of nodes) {
     if (n.constructor.name === "LoopNode") {
       const { start, end } = n.params[0];
       for (let i = start; i < end; i++) {
         const body = expandShader(n.params.at(-1)({ i: int(i) }));
-        runAssignments(body.nodes, values);
+        runAssignments(body.nodes, values, material);
       }
-    } else if (n.isAssignNode) setTarget(n.targetNode, evaluate(n.sourceNode, values), values);
-    else if (n.isVarNode) values.set(n.uuid, evaluate(n, values));
+    } else if (n.isAssignNode) setTarget(n.targetNode, evaluate(n.sourceNode, values, material), values);
+    else if (n.isVarNode) values.set(n.uuid, evaluate(n, values, material));
   }
 }
 function expectVector(actual: Value, expected: number[]) {
@@ -261,13 +263,13 @@ describe("WebGPU archive exact TSL formulas", () => {
       expect(evaluate(archiveCoverageNode(vec2(x, y), vec2(1920, height)))).toBeCloseTo(expected, 13);
       const values = new Map([[coordinate.uuid, [x, y]], [size.uuid, [1920, height]]]) as Bindings;
       q.value = expected;
-      expect(evaluate(material.maskNode, values)).toBe(false);
+      expect(evaluate(material.maskNode, values, material)).toBe(false);
       q.value = expected + 0.000001;
-      expect(evaluate(material.maskNode, values)).toBe(true);
+      expect(evaluate(material.maskNode, values, material)).toBe(true);
       q.value = 0;
-      expect(evaluate(material.maskNode, values)).toBe(false);
+      expect(evaluate(material.maskNode, values, material)).toBe(false);
       q.value = 1;
-      expect(evaluate(material.maskNode, values)).toBe(true);
+      expect(evaluate(material.maskNode, values, material)).toBe(true);
     }
   });
 
@@ -361,8 +363,8 @@ describe("Pinned physical refraction graph parity", () => {
     expect(sample).toBeDefined();
     const texture = sample.rawInputs[0];
     const baseTexture = (n: Graph): Graph => n.referenceNode ? baseTexture(n.referenceNode) : n;
-    expect(texture.generateMipmaps).toBe(true);
-    expect(baseTexture(texture)).toBe(baseTexture(graph(viewportOpaqueMipTexture())));
+    expect(baseTexture(texture).value.generateMipmaps).toBe(true);
+    expect(baseTexture(texture)).toBe(baseTexture(graph(archiveTransmissionTexture())));
     const values = refractionBindings();
     expect(evaluate(sample.rawInputs[1], values)).toBeCloseTo(frostedTransmissionLod(Math.hypot(0.1 * 1920, 0.2 * 1080), 1920, 0.42, 0.8, 1.46), 12);
     runAssignments(expanded.nodes, values);
@@ -370,7 +372,7 @@ describe("Pinned physical refraction graph parity", () => {
     expectVector(evaluate(texture.uvNode, values), [(0.1 + rayX + 1) / 2, 1 - (0.2 + 1) / 2]);
     const back = expandShader(archiveIBLVolumeRefraction(float(0.8), vec2(0.1, 0.2), THREE.BackSide, false));
     const backSample = back.nodes.flatMap(n => walk(n)).find(n => n.isShaderCallNodeInternal && n.shaderNode === bicubicShader)!;
-    expect(backSample.rawInputs[0].generateMipmaps).toBe(true);
+    expect(baseTexture(backSample.rawInputs[0]).value.generateMipmaps).toBe(true);
     expect(baseTexture(backSample.rawInputs[0])).not.toBe(baseTexture(texture));
   });
 });
@@ -436,7 +438,9 @@ describe("WebGPU material data ownership and lifecycle", () => {
       if (target instanceof ArchivePhysicalNodeMaterial) {
         expect(target.ior).toBe(1.46); expect(target.transmission).toBe(0.82);
         const lighting = target.setupLightingModel() as ArchiveFrostedLightingModel;
-        expect(graph(lighting.quality).object).toBe(getArchiveNodeControls(target)!.quality);
+        const ref=walk(lighting.quality).find(n=>n.isMaterialReferenceNode)!;
+        expect(ref).toBeDefined();expect(ref.material).toBeNull();
+        expect(evaluate(lighting.quality,new Map(),target)).toBe(getArchiveNodeControls(target)!.quality.value);
         expect(walk(target.roughnessNode).filter(n => n.object).every(n => n.object !== getArchiveNodeControls(material)!.quality && n.object !== getArchiveNodeControls(material)!.clarity)).toBe(true);
       }
     }
@@ -455,7 +459,7 @@ describe("WebGPU material data ownership and lifecycle", () => {
     returning.userData.appearance.value = 0.1;
     expect(supplied.quality!.value).toBe(0.7);
     expect(getArchiveNodeControls(returning.material)!.quality).toBe(returning.userData.appearance);
-    expect(graph((graph(returning.material).setupLightingModel() as ArchiveFrostedLightingModel).quality).object).toBe(returning.userData.appearance);
+    expect(evaluate((graph(returning.material).setupLightingModel() as ArchiveFrostedLightingModel).quality,new Map(),returning.material)).toBe(returning.userData.appearance.value);
   });
 
   it("still accepts existing CardAppearance.apply/setClarity/setTheme CPU updates", () => {
@@ -494,7 +498,15 @@ describe("WebGPU material data ownership and lifecycle", () => {
     const array = new ArchivePhysicalNodeMaterial(new THREE.MeshPhysicalMaterial({ roughness: 0.28, transmission: 0.78 }), options({ instanced: true }));
     expect(array.roughnessNode).toBeNull(); expect(array.roughness).toBe(0.28);
     expect(array.setupLightingModel()).toBeInstanceOf(PhysicalLightingModel);
-    expect(array.setupLightingModel()).not.toBeInstanceOf(ArchiveFrostedLightingModel);
+    const lighting=array.setupLightingModel() as ArchiveFrostedLightingModel;
+    expect(lighting).toBeInstanceOf(ArchiveFrostedLightingModel);
+    expect(lighting.archiveTransmission).toBe(true);
+    expect(evaluate(lighting.quality)).toBe(0);
+    for(const radius of [0.025,0.28,0.42])for(const eta of [1,1.46,1.5]){
+      const size=vec2(1600,900),axis=vec2(0.1,0.2);
+      const lod=archiveTransmissionLodNode(float(radius),float(eta),size,axis,lighting.quality);
+      expect(evaluate(lod)).toBeCloseTo(Math.log2(1600)*radius*Math.max(0,Math.min(1,2*eta-2)),12);
+    }
     const edges = new ArchivePhysicalNodeMaterial(new THREE.MeshPhysicalMaterial({ transmission: 0 }), options({ surface: "Optical_Edges", hasLow: false }));
     expect(edges.transmissionNode).toBeNull(); expect(edges.backdropNode).toBeNull(); expect(edges.useTransmission).toBe(false);
   });
@@ -509,6 +521,12 @@ describe("WebGPU material data ownership and lifecycle", () => {
 });
 
 describe("WebGPU hook placement and physical feature parity", () => {
+  it("does not alias double-side preparation with the back-side transmission shader", () => {
+    const material=new ArchivePhysicalNodeMaterial(new THREE.MeshPhysicalMaterial({side:THREE.DoubleSide,transmission:.9}),options());
+    const double=material.customProgramCacheKey();material.side=THREE.BackSide;const back=material.customProgramCacheKey();
+    material.side=THREE.FrontSide;const front=material.customProgramCacheKey();
+    expect(new Set([double,back,front]).size).toBe(3);material.side=THREE.DoubleSide;expect(material.customProgramCacheKey()).toBe(double);
+  });
   it("themes AFTER the diffuse map/vertex product, and AFTER frost height tint", () => {
     const mapped = [0.17, 0.48, 0.29];
     const base = vi.spyOn(MeshPhysicalNodeMaterial.prototype, "setupDiffuseColor").mockImplementation(() => {
@@ -518,7 +536,7 @@ describe("WebGPU hook placement and physical feature parity", () => {
     const material = new ArchivePhysicalNodeMaterial(new THREE.MeshPhysicalMaterial({ vertexColors: true, map: new THREE.Texture() }), c);
     const { nodes } = withStack(() => material.setupDiffuseColor({} as NodeBuilder));
     const values = binding([positionGeometry, [0, 1.48, 0]]);
-    runAssignments(nodes, values);
+    runAssignments(nodes, values, material);
     const tint = channels(evaluate(archiveFrostTintNode(float(0.4), float(0.3))));
     const dark = new THREE.Color("#626b70").toArray();
     expectVector(values.get(diffuseColor.uuid)!, [...mapped.map((v, i) => lerp(v * tint[i], dark[i], 0.65)), 0.7]);
@@ -535,7 +553,7 @@ describe("WebGPU hook placement and physical feature parity", () => {
     const { result } = withStack(() => material.setupOutput({} as NodeBuilder, vec4(vec3(...outgoing as [number, number, number]), 0.4)));
     const values = binding([diffuseColor, [0.2, 0.2, 0.2, 0.4]]);
     const themed = channels(evaluate(archivePrintedThemeNode(vec3(...outgoing as [number, number, number]), vec3(0.2), float(0.75))));
-    expectVector(evaluate(result, values), [...themed.map((v, i) => lerp(v, fog[i], fogAmount)), 0.4]);
+    expectVector(evaluate(result, values, material), [...themed.map((v, i) => lerp(v, fog[i], fogAmount)), 0.4]);
     expect(base).toHaveBeenCalledOnce(); expect(material.outputNode).toBeNull();
   });
 
@@ -570,25 +588,30 @@ describe("WebGPU hook placement and physical feature parity", () => {
     expect(inherited).toHaveBeenCalledOnce();
     expect(nodes.some(n => n.isAssignNode && walk(n.targetNode).some(child => child.uuid === diffuseColor.uuid))).toBe(true);
     const values = binding([diffuseColor, [0.8, 0.5, 0.2, 0.61]], [transmission, 0.91], [builder.context.backdrop!, [0.1, 0.2, 0.3, 0.42]]);
-    runAssignments(nodes, values);
+    runAssignments(nodes, values, material);
     expectVector(values.get(diffuseColor.uuid)!, [0.8, 0.5, 0.2, 0.61 * lerp(1, 0.42, 0.91)]);
     expect(material.transmissionNode).toBeNull(); // native scalar/map controls still drive transmission.
     expect(material.backdropNode).toBeNull();
   });
 
-  it("isolates bound theme-only and printed control nodes in the r183 builder-state cache", () => {
-    for (const surface of ["Index_Inlay", "Ivory_Edges", "Printed_Canvas"]) {
-      const source = surface === "Printed_Canvas" ? new THREE.MeshBasicMaterial() : new THREE.MeshPhysicalMaterial();
-      const first = createArchiveNodeMaterial(source, options({ surface }));
-      const second = createArchiveNodeMaterial(source, options({ surface }));
-      const clone = first.clone();
-      expect(first.customProgramCacheKey()).not.toBe(second.customProgramCacheKey());
-      expect(first.customProgramCacheKey()).not.toBe(clone.customProgramCacheKey());
-      const key = first.customProgramCacheKey();
-      getArchiveNodeControls(first)!.theme.value = 0.7;
-      getArchiveNodeControls(first)!.subdued.value = 0.9;
+  it("shares cache keys but reads each material's independent controls",()=>{
+    const nodes=createArchiveMaterialSurfaceNodes(false);
+    for(const surface of ["Index_Inlay","Ivory_Edges","Printed_Canvas"]){
+      const source=surface==="Printed_Canvas"?new THREE.MeshBasicMaterial():new THREE.MeshPhysicalMaterial();
+      const first=createArchiveNodeMaterial(source,options({surface})),second=createArchiveNodeMaterial(source,options({surface})),clone=first.clone();
+      const observer=new NodeMaterialObserver({material:first,object:{},renderer:{}} as any);expect(observer.hasNode).toBe(true);
+      const key=first.customProgramCacheKey();expect(second.customProgramCacheKey()).toBe(key);expect(clone.customProgramCacheKey()).toBe(key);
+      getArchiveNodeControls(first)!.theme.value=.7;getArchiveNodeControls(first)!.subdued.value=.9;
+      expect(evaluate(nodes.theme,new Map(),first)).toBe(.7);expect(evaluate(nodes.theme,new Map(),second)).toBe(.2);expect(evaluate(nodes.theme,new Map(),clone)).toBe(.2);
+      const ref=walk(nodes.theme).find(n=>n.isMaterialReferenceNode)!;ref.updateReference({material:first});ref.update();expect(ref.node.value).toBe(.7);ref.updateReference({material:second});ref.update();expect(ref.node.value).toBe(.2);
       expect(first.customProgramCacheKey()).toBe(key);
     }
+  });
+
+  it("bounds shader keys while hundreds of returning-card states vary",()=>{
+    const source=new THREE.MeshPhysicalMaterial({transmission:.9}),keys=new Set<string>();
+    for(let i=0;i<200;i++){const material=createArchiveNodeMaterial(source,options({quality:{value:i/200},clarity:{value:(i%5)/5}}));keys.add(material.customProgramCacheKey());material.dispose()}
+    expect(keys.size).toBe(1);
   });
 
   it("keeps cache keys stable during scalar animation but separates structural shader variants", () => {

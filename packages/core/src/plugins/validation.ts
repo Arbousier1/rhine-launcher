@@ -38,7 +38,7 @@ export function launchRequest(input:unknown):LaunchRequest {
 export function settingsPatch(input:unknown):Partial<Settings> {
  const b=object(input);keys(b,['language','dataDir','concurrency','mirrors','proxy','autoDownloadJava','keepLogs','showSnapshots','downloadSource','theme','curseforgeApiKey','microsoftClientId','microsoftAuthority','authlibInjectorMirror']);const out={...b}
  if(b.language!==undefined&&!['zh-CN','en-US'].includes(b.language))fail('不支持的语言')
- if(b.theme!==undefined&&!['archive','midnight','light'].includes(b.theme))fail('不支持的主题')
+ if(b.theme!==undefined&&!['ellan','archive','midnight','light'].includes(b.theme))fail('不支持的主题')
  if(b.downloadSource!==undefined&&!['official','mirror'].includes(b.downloadSource))fail('不支持的下载源')
  if(b.concurrency!==undefined)out.concurrency=integer(b.concurrency,'concurrency',1,64)
  if(b.keepLogs!==undefined)out.keepLogs=integer(b.keepLogs,'keepLogs',0,200)

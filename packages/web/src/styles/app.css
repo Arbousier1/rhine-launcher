@@ -1,3 +1,5 @@
+@import './ellan-theme.css';
+
 /**
  * Application shell: 260px navigation rail on the left, a hairline top bar and
  * the scrolling content column. Everything is separated by 1px lines only.

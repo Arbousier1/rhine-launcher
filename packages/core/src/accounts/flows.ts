@@ -20,7 +20,13 @@ export interface PendingMicrosoftFlow {
   tokens?: MicrosoftTokens
 }
 
-/** Bind immutable app identity to this flow instead of consulting mutable settings at poll time. */
+/**
+ * Bind immutable app identity to this flow instead of consulting mutable settings at poll time.
+ *
+ * @returns a public projection: the secret `deviceCode` stays inside the stored
+ * pending flow, so neither an HTTP caller nor a direct capability call can read
+ * it. Callers only ever need `flowId` to complete or cancel the login.
+ */
 export function storeMicrosoftFlow(state: AccountsState, flow: DeviceCodeFlow, config: MicrosoftConfiguration): BoundDeviceCodeFlow {
   // Bound concurrent flows to avoid retaining abandoned device-code secrets indefinitely.
   if (state.flows.size >= 4) finishMicrosoftFlow(state, state.flows.keys().next().value!, 'FLOW_CANCELLED')
@@ -30,7 +36,9 @@ export function storeMicrosoftFlow(state: AccountsState, flow: DeviceCodeFlow, c
   pending.timer.unref?.()
   state.flows.set(bound.flowId, pending)
   state.latestFlowId = bound.flowId
-  return { ...bound }
+  // Strip the secret before handing anything back.
+  const { deviceCode: _deviceCode, ...publicFlow } = bound
+  return publicFlow as BoundDeviceCodeFlow
 }
 export function pendingMicrosoftFlow(state: AccountsState, id = state.latestFlowId): PendingMicrosoftFlow {
   const pending = id && state.flows.get(id)

@@ -1,0 +1,17 @@
+/* Native titlebar drag regions. Page content and controls remain interactive. */
+html[data-desktop-platform] .rh-topbar {
+  -webkit-app-region: drag;
+  user-select: none;
+}
+html[data-desktop-platform] .rh-topbar__right,
+html[data-desktop-platform] .rh-topbar button,
+html[data-desktop-platform] .rh-topbar a,
+html[data-desktop-platform] .rh-topbar input,
+html[data-desktop-platform] .rh-topbar select,
+html[data-desktop-platform] .rh-topbar textarea,
+html[data-desktop-platform] .rh-topbar [role='button'] {
+  -webkit-app-region: no-drag;
+}
+html[data-desktop-platform='win32'] .rh-topbar {
+  padding-right: max(152px, calc(100vw - env(titlebar-area-width, 100vw) + 12px));
+}

@@ -1,3 +1,19 @@
+/** Safe authentication metadata; never includes request bodies or credentials. */
+export const AUTHENTICATION_STAGES = ['microsoft-oauth', 'xbox-live', 'xsts', 'minecraft-login', 'minecraft-profile'] as const
+export type AuthenticationStage = typeof AUTHENTICATION_STAGES[number]
+export interface AuthenticationDiagnostic {
+  stage: AuthenticationStage
+  upstreamStatus?: number
+  providerCode?: 'ForbiddenOperationException' | 'UnauthorizedOperationException' | 'INVALID_APP_REGISTRATION' | 'TooManyRequestsException'
+}
+export interface AccountErrorOptions {
+  status?: number
+  retryAfterMs?: number
+  intervalMs?: number
+  flowId?: string
+  diagnostic?: AuthenticationDiagnostic
+}
+
 /** Stable errors shared by account actions; never include request bodies or credentials. */
 export class AccountError extends Error {
   readonly code: string
@@ -6,8 +22,9 @@ export class AccountError extends Error {
   readonly retryAfterMs?: number
   readonly intervalMs?: number
   readonly flowId?: string
+  readonly diagnostic?: AuthenticationDiagnostic
 
-  constructor(message: string, code = 'ACCOUNT_ERROR', options: { status?: number; retryAfterMs?: number; intervalMs?: number; flowId?: string } = {}) {
+  constructor(message: string, code = 'ACCOUNT_ERROR', options: AccountErrorOptions = {}) {
     super(message)
     this.name = 'AccountError'
     this.code = code
@@ -16,6 +33,7 @@ export class AccountError extends Error {
     this.retryAfterMs = options.retryAfterMs
     this.intervalMs = options.intervalMs
     this.flowId = options.flowId
+    this.diagnostic = options.diagnostic
   }
 }
 

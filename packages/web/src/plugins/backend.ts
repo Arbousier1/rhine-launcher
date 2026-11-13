@@ -1,3 +1,4 @@
+import { apiUrl } from '@/api/client'
 /**
  * Page-local adapter for the backend feature manager.
  *
@@ -29,8 +30,9 @@ export class BackendFeatureError extends Error {
 }
 
 function endpoint(path: string): string {
-  const base = typeof window === 'undefined' ? '' : window.location.origin
-  return base + path
+  // Under the desktop shell window.location.origin is rhine-app://app, so the
+  // backend origin must come from the explicit API base instead.
+  return apiUrl(path)
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

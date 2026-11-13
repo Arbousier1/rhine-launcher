@@ -21,6 +21,7 @@ const models = ['archive-cassette', 'archive-assembly'].map((name) => {
 })
 
 export default defineConfig({
+  root: r('./'),
   base: '/',
   resolve: { alias: { '@': r('./src') } },
   define: {
@@ -45,8 +46,9 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    // The default launcher build owns dist; this build only adds /experimental.html.
+    emptyOutDir: false,
     sourcemap: true,
-    rollupOptions: { input: { console: r('./console.html') } },
+    rollupOptions: { input: { 'experimental-console': r('./experimental.html') } },
   },
 })

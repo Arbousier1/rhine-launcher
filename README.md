@@ -61,7 +61,7 @@ pnpm --filter @rhine/web dev        # 前端 :5183（已代理 /api 与 /ws）
 | Java 扫描 / Mojang JRE 下载 | ✅ | 独立 `java.scan` / `java.pick` / `java.install` |
 | 启动（真实进程、日志、退出码、游玩时长） | ✅ | 不经 shell；凭据在日志与会话快照中脱敏；卸载启动插件会终止其子进程 |
 | 离线账号 | ✅ | RFC4122 v3 UUID |
-| 微软设备码登录 | 🟡 | 完整 device-code → XBL → XSTS → Minecraft 链路；**必须使用你自己注册的 public client app**（设置页或 `RHINE_MICROSOFT_CLIENT_ID`），不借用他方应用身份 |
+| 微软设备码登录 | 🟡 | 已实现 device-code → XBL → XSTS → Minecraft 请求链；内置自有应用，**Minecraft API 接入审核及真人完整登录尚未验证**。应用拒绝与游戏购买状态分别处理，可用 `RHINE_MICROSOFT_CLIENT_ID` 指定获准使用的已审核应用 |
 | authlib-injector 外置登录 | ✅ | Yggdrasil 认证、刷新、校验；启动时注入 agent |
 | 整合包导入（mrpack / CurseForge zip） | ✅ | 严格 ZIP 预检、哈希校验、路径穿越拒绝、暂存后原子提交 |
 | 模组更新检查（Modrinth / CurseForge） | ✅ | 每种来源独立插件；区分 `update` / `current` / `unknown` / `error`，不伪报「全部最新」 |
@@ -71,11 +71,14 @@ pnpm --filter @rhine/web dev        # 前端 :5183（已代理 /api 与 /ws）
 
 ## 凭据配置
 
-凭据一律通过环境变量注入，优先级为 **请求参数 → 环境变量 → `launcher.json`**：
+微软登录已内置本项目自己的公共客户端应用（同一注入思路见 HMCL 的
+`hmcl.microsoft.auth.id`），不必重复填写 ID。但新应用还需要 Mojang 的 Minecraft API 人工审核；
+设备码签发不代表完整登录或购买检查成功。其余凭据解析优先级为
+**请求参数 → 环境变量 → `launcher.json` → 内置值**：
 
 ```bash
-cp .env.example .env          # 然后填写
-RHINE_MICROSOFT_CLIENT_ID=    # 你自己的 Entra 应用 ID（设备码登录，公开客户端，无需 secret）
+cp .env.example .env          # 可选：覆盖默认行为
+RHINE_MICROSOFT_CLIENT_ID=    # 可选：改用你自己的 Entra 应用 ID；填 off 则关闭内置应用
 RHINE_CURSEFORGE_API_KEY=     # 可选；不填则走镜像，仍可搜索与下载
 ```
 

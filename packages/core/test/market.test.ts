@@ -13,7 +13,7 @@ import { marketPlugin } from './support/implementation-fixtures.ts'
 import { modsPlugin } from './support/implementation-fixtures.ts'
 import {
   CURSEFORGE_CLASS_IDS, CurseForgeClient, CurseForgeError, MINECRAFT_GAME_ID,
-  curseForgeSortField, curseForgeCdnUrl, loaderNameOf, mirrorUrl, projectTypeFromClassId,
+  curseForgeSortField, curseForgeCdnUrl, curseForgeDependencyType, loaderNameOf, mirrorUrl, projectTypeFromClassId,
   toMarketProject as cfProject, toMarketVersion as cfVersion,
 } from '../src/market/curseforge.ts'
 import {
@@ -216,6 +216,32 @@ describe('market/curseforge helpers', () => {
     expect(client.hasKey).toBe(false)
     expect(client.usesMirror).toBe(false)
     await expect(client.search({ query: 'jei' })).rejects.toThrow(/API Key/)
+  })
+
+  it('maps every real CurseForge relationType the way HMCL does', async () => {
+    // HMCL's RELATION_TYPE table: 1=EmbeddedLibrary, 2=OptionalDependency,
+    // 3=RequiredDependency, 4=Tool, 5=Incompatible, 6=Include.
+    // Treating 3 as "incompatible" silently drops required prerequisites.
+    const cases: [number, string][] = [
+      [1, 'embedded'], [2, 'optional'], [3, 'required'],
+      [4, 'optional'], [5, 'incompatible'], [6, 'embedded'],
+    ]
+    for (const [relationType, expected] of cases) {
+      expect(curseForgeDependencyType(relationType)).toBe(expected)
+      const version = cfVersion({ id: 1, fileName: 'a.jar', dependencies: [{ modId: 777, relationType }] }, '238222')
+      expect(version.dependencies[0].type).toBe(expected)
+    }
+    // An unrecognised value must not invent a required install.
+    expect(curseForgeDependencyType(42)).toBe('optional')
+    expect(curseForgeDependencyType(undefined)).toBe('optional')
+  })
+
+  it('keeps required dependencies out of the incompatible bucket for a real mod', () => {
+    const version = cfVersion({
+      id: 9, fileName: 'create.jar',
+      dependencies: [{ modId: 306612, relationType: 3 }, { modId: 1234, relationType: 5 }],
+    }, '328085')
+    expect(version.dependencies.map(d => d.type)).toEqual(['required', 'incompatible'])
   })
 
   it('reports an unconfigured client as mirror-capable by default', () => {

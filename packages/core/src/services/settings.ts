@@ -27,7 +27,7 @@ export function defaultSettings(): Settings {
     keepLogs: 10,
     showSnapshots: true,
     downloadSource: 'official',
-    theme: 'archive',
+    theme: 'ellan',
     microsoftClientId: '',
   }
 }

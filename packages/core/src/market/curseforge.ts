@@ -71,12 +71,16 @@ export interface CurseForgeOptions {
 /** Search parameters understood by {@link CurseForgeClient.search}. */
 export interface CurseForgeSearchParams {
   query: string
+  /** Defaults to `mod`, so a bare search cannot mix in modpacks. */
   projectType?: ProjectType
   gameVersion?: string
   loader?: string
+  /** CurseForge category id (HMCL sends this as `categoryId`). */
+  categoryId?: number
   offset?: number
   limit?: number
   sort?: 'relevance' | 'downloads' | 'follows' | 'updated' | 'newest'
+  sortOrder?: 'asc' | 'desc'
 }
 
 /** Map our sort option onto CurseForge's sortField enum. */
@@ -185,9 +189,42 @@ export function toMarketVersion(file: any, projectId: string): MarketVersion {
     dependencies: Array.isArray(file?.dependencies)
       ? file.dependencies.map((dependency: any) => ({
         projectId: dependency?.modId ? String(dependency.modId) : undefined,
-        type: dependency?.relationType === 2 ? 'optional' : dependency?.relationType === 3 ? 'incompatible' : 'required',
+        type: curseForgeDependencyType(dependency?.relationType),
       }))
       : [],
+  }
+}
+
+/**
+ * Map CurseForge's `relationType` enum onto our dependency vocabulary.
+ *
+ * The real enum, per HMCL's `RELATION_TYPE` table:
+ *
+ * ```java
+ * pair(1, EMBEDDED);     // EmbeddedLibrary
+ * pair(2, OPTIONAL);     // OptionalDependency
+ * pair(3, REQUIRED);     // RequiredDependency
+ * pair(4, OPTIONAL);     // Tool
+ * pair(5, INCOMPATIBLE); // Incompatible
+ * pair(6, EMBEDDED);     // Include (CF hides this)
+ * ```
+ *
+ * Getting 3 wrong is not cosmetic: treating a required dependency as
+ * incompatible drops the prerequisite mod from an install, so the game then
+ * crashes on launch with a missing-dependency error.
+ */
+export function curseForgeDependencyType(relationType: number | undefined): 'required' | 'optional' | 'incompatible' | 'embedded' {
+  switch (relationType) {
+    case 1:
+    case 6: return 'embedded'
+    case 2:
+    case 4: return 'optional'
+    case 5: return 'incompatible'
+    // 3 is RequiredDependency. Anything unrecognised must not silently become
+    // "required": unknown values carry no verified meaning, so treat them as
+    // optional to avoid inventing an install obligation.
+    case 3: return 'required'
+    default: return 'optional'
   }
 }
 
@@ -304,10 +341,16 @@ export class CurseForgeClient {
     query.set('index', String(index))
     query.set('pageSize', String(limit))
     query.set('sortField', String(curseForgeSortField(params.sort)))
-    query.set('sortOrder', 'desc')
-    if (params.projectType) query.set('classId', String(CURSEFORGE_CLASS_IDS[params.projectType] ?? 6))
+    // Default to mods, matching HMCL: `classId` is always sent (HMCL's
+    // `toSectionId(type)`) instead of being left off. An omitted `classId`
+    // makes CurseForge return modpacks (4471) and resource packs alongside
+    // mods, so a search for "jei" would show integration packs as if they were
+    // the mod itself.
+    query.set('classId', String(CURSEFORGE_CLASS_IDS[params.projectType ?? 'mod'] ?? CURSEFORGE_CLASS_IDS.mod))
+    if (params.categoryId) query.set('categoryId', String(params.categoryId))
     const loaderId = params.loader ? CURSEFORGE_LOADER_IDS[params.loader.toLowerCase()] : undefined
     if (loaderId) query.set('modLoaderType', String(loaderId))
+    query.set('sortOrder', params.sortOrder === 'asc' ? 'asc' : 'desc')
     const payload = await this.request<any>('/v1/mods/search?' + query.toString())
     const data = Array.isArray(payload?.data) ? payload.data.map(toMarketProject) : []
     return {

@@ -36,6 +36,8 @@ notices live with the assets they cover and must be preserved:
   `packages/web/public/fonts/misans-webfont-4.3.1/**/upstream.css.txt` —
   MiSans webfont distribution.
 - `packages/web/public/assets/boot-lettering-notice.txt` — boot lettering.
+- `packages/desktop/LICENSES/DeepSeek-Harness-MIT.txt` — adapted desktop transport helpers, MIT, Copyright (c) 2026 DeepSeek.
+- `packages/ellan-ui/LICENSE.upstream` — original Ellan/XMCL frontend and browser bridge, MIT, Copyright (c) 2023 ci010. Fonts/images retain their original notices; redistribution review remains pending.
 
 See `packages/web/src/console/VENDOR.md` for the exact upstream commits and a
 per-seam description of what was retained versus modified.

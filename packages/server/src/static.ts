@@ -13,8 +13,8 @@ import { extname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ApiError } from './http.ts'
 
-/** The archive console is the product entry; the React shell lives at /app.html. */
-export const ENTRY_DOCUMENT = 'console.html'
+/** The feature-plugin shell is the product entry; other surfaces build alongside it. */
+export const ENTRY_DOCUMENT = 'app.html'
 
 /** `packages/web/dist` relative to this file (src → server → packages). */
 function defaultDistDir(): string {

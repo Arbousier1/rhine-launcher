@@ -1,5 +1,7 @@
 import {classifyLoaderAttachment} from '../loader/versions.ts'
+import { prepareOriginalLaunch } from '../ellan/launch.ts'
 import { FeatureError, type FeatureEnvironment } from '@rhine/plugin-api'
+
 import { join } from 'node:path'
 import { readFile, stat } from 'node:fs/promises'
 import type { Account, Instance, JavaRuntime, LaunchRequest, Settings } from '../types.ts'
@@ -44,6 +46,7 @@ export async function selectedVersion(instance:Instance,env:FeatureEnvironment):
 
 /** One preparation workflow, with all platform/install actions independently replaceable. */
 export async function prepareFeatureLaunch(input:unknown,env:FeatureEnvironment,preview:boolean):Promise<PreparedFeatureLaunch> {
+  if (input && typeof input === 'object' && 'originalOptions' in input) return prepareOriginalLaunch(input, env, preview)
   const request=parseLaunch(input)
   const instance=env.use<Instance|undefined>('instance.get',{id:request.instanceId})
   if(!instance)throw new FeatureError('INSTANCE_NOT_FOUND','实例不存在：'+request.instanceId,404)

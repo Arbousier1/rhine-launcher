@@ -1,0 +1,15 @@
+{
+  "name": "@rhine/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Electron 桌面宿主：沿用 DSH 桌面端的窗口与协议范式",
+  "type": "module",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "node ../../scripts/start-desktop.mjs",
+    "build": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "electron": "^38.8.6"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/EllanStudio/ellanlauncher",
+  "revision": "c1e65d9439abe3b51f98d98dd954831e9d2f827e",
+  "frontend": "xmcl-keystone-ui",
+  "entry": "src/index.html",
+  "bootstrap": "src/windows/main/index.ts",
+  "framework": "Vue 3 / Vuetify 4",
+  "strategy": "unchanged renderer plus runtime compatibility adapter",
+  "transportReference": "deskgap-app/src/browser.ts",
+  "license": "MIT; Copyright (c) 2023 ci010"
+}
